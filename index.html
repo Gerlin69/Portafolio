@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Cecilia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header y Navegación */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Sección de Productos */
+        .productos {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .productos h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        .grid-productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .producto {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .producto:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .producto-img {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .producto-info {
+            padding: 1.5rem;
+        }
+
+        .producto-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .producto-info p {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .precio {
+            font-size: 1.5rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .producto-info .btn {
+            width: 100%;
+            text-align: center;
+            background: #667eea;
+            color: white;
+            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .producto-info .btn:hover {
+            background: #764ba2;
+        }
+
+        /* Sección de Contacto */
+        .contacto {
+            background: #f8f9fa;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .contacto-contenido {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .contacto h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .contacto-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .info-item i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            .grid-productos {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">🛍️ CeciStore</div>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <h1>Bienvenido a CeciStore</h1>
+        <p>Descubre los mejores productos con los mejores precios en Medellín y en el Chocó. Productos de calidad, entrega rápida y garantía completa.</p>
+        <a href="#productos" class="btn">Ver Productos</a>
+    </section>
+
+    <!-- Productos -->
+    <section id="productos" class="productos">
+        <h2>Nuestros Productos</h2>
+        <div class="grid-productos">
+            <!-- Producto 1 -->
+            <div class="producto">
+                <div class="producto-img">📱</div>
+                <div class="producto-info">
+                    <h3>Smartphone Pro</h3>
+                    <p>Últimas características, pantalla AMOLED de 6.5"</p>
+                    <div class="precio">$599.99</div>
+                    <button class="btn">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Producto 2 -->
+            <div class="producto">
+                <div class="producto-img">⌚</div>
+                <div class="producto-info">
+                    <h3>Smartwatch Pro</h3>
+                    <p>Monitor de salud, GPS integrado, resistente al agua</p>
+                    <div class="precio">$299.99</div>
+                    <button class="btn">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Producto 3 -->
+            <div class="producto">
+                <div class="producto-img">🎧</div>
+                <div class="producto-info">
+                    <h3>Auriculares Wireless</h3>
+                    <p>Cancelación de ruido activa, 30 horas de batería</p>
+                    <div class="precio">$199.99</div>
+                    <button class="btn">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Producto 4 -->
+            <div class="producto">
+                <div class="producto-img">💻</div>
+                <div class="producto-info">
+                    <h3>Laptop Gaming</h3>
+                    <p>Procesador última gen, RTX 4060, 16GB RAM</p>
+                    <div class="precio">$1,299.99</div>
+                    <button class="btn">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Producto 5 -->
+            <div class="producto">
+                <div class="producto-img">📷</div>
+                <div class="producto-info">
+                    <h3>Cámara Digital</h3>
+                    <p>Sensor full-frame, 4K video, lentes intercambiables</p>
+                    <div class="precio">$899.99</div>
+                    <button class="btn">Agregar al Carrito</button>
+                </div>
+            </div>
+
+            <!-- Producto 6 -->
+            <div class="producto">
+                <div class="producto-img">🎮</div>
+                <div class="producto-info">
+                    <h3>Consola Gaming</h3>
+                    <p>Última generación, incluye 2 controles y juego</p>
+                    <div class="precio">$499.99</div>
+                    <button class="btn">Agregar al Carrito</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="contacto">
+        <div class="contacto-contenido">
+            <h2>Contáctanos</h2>
+            <div class="contacto-info">
+                <div class="info-item">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">📍</div>
+                    <h3>Ubicación</h3>
+                    <p>Calle Principal 123<br>Ciudad, CP 12345</p>
+                </div>
+                <div class="info-item">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">📞</div>
+                    <h3>Teléfono</h3>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+                <div class="info-item">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">📧</div>
+                    <h3>Email</h3>
+                    <p>info@cecistore.com</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 CeciStore. Todos los derechos reservados.</p>
+        <p>Síguenos en nuestras redes sociales</p>
+    </footer>
+</body>
+</html>
