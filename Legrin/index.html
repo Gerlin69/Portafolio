@@ -373,7 +373,7 @@
             { id: 2, name: 'Aceite Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=300&h=300&fit=crop', description: 'Hidratación y brillo' },
             { id: 3, name: 'Shampoo Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=300&h=300&fit=crop', description: 'Limpieza profunda' },
             { id: 4, name: 'Crema Afeitar', price: '$15.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=300&h=300&fit=crop', description: 'Suave y protector' },
-            { id: 5, name: 'Clay Styling', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=300&h=300&fit=crop', description: 'Efecto mate natural' },
+            { id: 5, name: 'Mero Macho', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=300&h=300&fit=crop', description: 'Efecto mate natural' },
             { id: 6, name: 'Serum Capilar', price: '$15.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=300&h=300&fit=crop', description: 'Reparación capilar' }
         ];
 
@@ -422,6 +422,7 @@
         // Guardar solicitud en Google Sheets
         async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
             try {
+                console.log('📤 Guardando solicitud en Google Sheets...');
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -433,10 +434,22 @@
                         tipoCorte: tipoCorte
                     })
                 });
+
+                if (!response.ok) {
+                    console.error('Error HTTP al guardar:', response.status);
+                    return null;
+                }
+
                 const data = await response.json();
-                return data.id; // Retorna el ID de la solicitud
+                if (data.success) {
+                    console.log('✅ Solicitud guardada con ID:', data.id);
+                    return data.id;
+                } else {
+                    console.error('Error en respuesta:', data.error);
+                    return null;
+                }
             } catch (error) {
-                console.error('Error al guardar en Google Sheets:', error);
+                console.error('❌ Error al guardar en Google Sheets:', error);
                 return null;
             }
         }
@@ -445,10 +458,20 @@
         async function obtenerSolicitudesGoogleSheets() {
             try {
                 const response = await fetch(APPS_SCRIPT_URL);
+                if (!response.ok) {
+                    console.error('Error HTTP:', response.status);
+                    return [];
+                }
                 const data = await response.json();
+
+                // Verificar que sea un array
+                if (!Array.isArray(data)) {
+                    console.warn('Google Sheets no retornó un array:', data);
+                    return [];
+                }
                 return data;
             } catch (error) {
-                console.error('Error al obtener solicitudes:', error);
+                console.error('Error al obtener solicitudes de Google Sheets:', error);
                 return [];
             }
         }
@@ -516,18 +539,28 @@
 
         // Sincronizar reservas con Google Sheets al cargar la página
         async function sincronizarReservas() {
-            const solicitudes = await obtenerSolicitudesGoogleSheets();
-            solicitudes.forEach(solicitud => {
-                if (solicitud.Estado === 'Aprobada') {
-                    agregarReservaConfirmada(
-                        solicitud.Nombre,
-                        solicitud.Barbero,
-                        solicitud.Fecha,
-                        solicitud.Hora
-                    );
+            try {
+                const solicitudes = await obtenerSolicitudesGoogleSheets();
+
+                if (!solicitudes || solicitudes.length === 0) {
+                    console.log('📭 No hay solicitudes en Google Sheets');
+                    return;
                 }
-            });
-            console.log('✅ Reservas sincronizadas desde Google Sheets');
+
+                solicitudes.forEach(solicitud => {
+                    if (solicitud.Estado === 'Aprobada') {
+                        agregarReservaConfirmada(
+                            solicitud.Nombre,
+                            solicitud.Barbero,
+                            solicitud.Fecha,
+                            solicitud.Hora
+                        );
+                    }
+                });
+                console.log('✅ Reservas sincronizadas desde Google Sheets');
+            } catch (error) {
+                console.error('Error en sincronización:', error);
+            }
         }
 
         // Obtener la próxima hora de inicio después de X horas
