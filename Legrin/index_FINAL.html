@@ -31,6 +31,17 @@
         .horario-disponible:hover { background: #059669; }
         .horario-seleccionado { background: #f59e0b; color: #000; }
 
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             .image-gallery { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
         }
@@ -362,9 +373,169 @@
             { id: 2, name: 'Aceite Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=300&h=300&fit=crop', description: 'Hidratación y brillo' },
             { id: 3, name: 'Shampoo Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=300&h=300&fit=crop', description: 'Limpieza profunda' },
             { id: 4, name: 'Crema Afeitar', price: '$15.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=300&h=300&fit=crop', description: 'Suave y protector' },
-            { id: 5, name: 'Mero macho', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=300&h=300&fit=crop', description: 'Efecto mate natural' },
+            { id: 5, name: 'Clay Styling', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=300&h=300&fit=crop', description: 'Efecto mate natural' },
             { id: 6, name: 'Serum Capilar', price: '$15.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=300&h=300&fit=crop', description: 'Reparación capilar' }
         ];
+
+        // ===== SISTEMA DE RESERVAS CON VALIDACIÓN Y GOOGLE SHEETS =====
+
+        // URL del Google Apps Script
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxAqQQ08f0NZ1kpFjJeG5R7ky7Kcq4k_jl5-61fQ8AYEBDpexbA3RZkHNn77mvd_ZLt_A/exec';
+
+        // Obtener reservas confirmadas del localStorage
+        function obtenerReservas() {
+            const reservas = localStorage.getItem('legrinReservas');
+            return reservas ? JSON.parse(reservas) : [];
+        }
+
+        // Guardar reservas en localStorage
+        function guardarReservas(reservas) {
+            localStorage.setItem('legrinReservas', JSON.stringify(reservas));
+        }
+
+        // Agregar una reserva confirmada
+        function agregarReservaConfirmada(nombre, barbero, fecha, hora) {
+            const reservas = obtenerReservas();
+            reservas.push({
+                id: Date.now(),
+                nombre: nombre,
+                barbero: barbero,
+                fecha: fecha,
+                hora: hora,
+                fechaConfirmacion: new Date().toISOString()
+            });
+            guardarReservas(reservas);
+            console.log('✅ Reserva confirmada agregada al sistema');
+        }
+
+        // Validar disponibilidad: ¿Está ocupado este barbero a esta hora?
+        function validarDisponibilidad(barbero, fecha, hora) {
+            const reservas = obtenerReservas();
+            const conflicto = reservas.find(r =>
+                r.barbero === barbero &&
+                r.fecha === fecha &&
+                r.hora === hora
+            );
+            return !conflicto; // Devuelve true si está disponible, false si está ocupado
+        }
+
+        // Guardar solicitud en Google Sheets
+        async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        telefono: telefono,
+                        barbero: barbero,
+                        fecha: fecha,
+                        hora: hora,
+                        tipoCorte: tipoCorte
+                    })
+                });
+                const data = await response.json();
+                return data.id; // Retorna el ID de la solicitud
+            } catch (error) {
+                console.error('Error al guardar en Google Sheets:', error);
+                return null;
+            }
+        }
+
+        // Obtener solicitudes de Google Sheets y verificar estado
+        async function obtenerSolicitudesGoogleSheets() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error al obtener solicitudes:', error);
+                return [];
+            }
+        }
+
+        // Verificar si una solicitud fue aprobada o rechazada
+        async function verificarEstadoReserva(nombre, barbero, fecha, hora) {
+            const solicitudes = await obtenerSolicitudesGoogleSheets();
+            const solicitud = solicitudes.find(s =>
+                s.Nombre === nombre &&
+                s.Barbero === barbero &&
+                s.Fecha === fecha &&
+                s.Hora === hora
+            );
+
+            if (solicitud) {
+                if (solicitud.Estado === 'Aprobada') {
+                    // Agregar a reservas confirmadas
+                    agregarReservaConfirmada(nombre, barbero, fecha, hora);
+                    mostrarNotificacion('✅ ¡Tu reserva fue CONFIRMADA! El barbero confirmó tu cita.', 'success');
+                    return 'aprobada';
+                } else if (solicitud.Estado === 'Rechazada') {
+                    mostrarNotificacion(`❌ Tu reserva fue rechazada. Motivo: ${solicitud['Motivo Rechazo'] || 'Sin especificar'}`, 'error');
+                    return 'rechazada';
+                }
+            }
+            return 'pendiente';
+        }
+
+        // Mostrar notificaciones al cliente
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notifDiv = document.createElement('div');
+            notifDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 20px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                z-index: 9999;
+                animation: slideIn 0.5s ease;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+
+            if (tipo === 'success') {
+                notifDiv.style.backgroundColor = '#10b981';
+                notifDiv.style.color = 'white';
+            } else if (tipo === 'error') {
+                notifDiv.style.backgroundColor = '#ef4444';
+                notifDiv.style.color = 'white';
+            } else if (tipo === 'info') {
+                notifDiv.style.backgroundColor = '#3b82f6';
+                notifDiv.style.color = 'white';
+            }
+
+            notifDiv.textContent = mensaje;
+            document.body.appendChild(notifDiv);
+
+            const duracion = tipo === 'success' ? 5000 : (tipo === 'error' ? 7000 : 6000);
+            setTimeout(() => {
+                notifDiv.remove();
+            }, duracion);
+        }
+
+        // Sincronizar reservas con Google Sheets al cargar la página
+        async function sincronizarReservas() {
+            const solicitudes = await obtenerSolicitudesGoogleSheets();
+            solicitudes.forEach(solicitud => {
+                if (solicitud.Estado === 'Aprobada') {
+                    agregarReservaConfirmada(
+                        solicitud.Nombre,
+                        solicitud.Barbero,
+                        solicitud.Fecha,
+                        solicitud.Hora
+                    );
+                }
+            });
+            console.log('✅ Reservas sincronizadas desde Google Sheets');
+        }
+
+        // Obtener la próxima hora de inicio después de X horas
+        function obtenerProximaHora(horaActual) {
+            const [horas, minutos] = horaActual.split(':').map(Number);
+            const proximaHora = horas + Math.ceil((minutos + duracionCorte) / 60);
+            return String(proximaHora).padStart(2, '0') + ':00';
+        }
 
         // FUNCIONES RESERVA
         function actualizarHorarios() {
@@ -387,9 +558,12 @@
                 }
             }
 
-            container.innerHTML = horarios.map(h =>
-                `<button type="button" class="horario-disponible" onclick="seleccionarHora('${h}')">${h}</button>`
-            ).join('');
+            container.innerHTML = horarios.map(h => {
+                const disponible = validarDisponibilidad(barbero, fecha, h);
+                const claseEstado = disponible ? 'horario-disponible' : 'opacity-50 bg-red-900 cursor-not-allowed';
+                const atributoDisabled = disponible ? '' : 'disabled';
+                return `<button type="button" class="${claseEstado}" onclick="seleccionarHora('${h}')" title="${disponible ? 'Disponible' : 'Ya reservado'}" ${atributoDisabled}>${h}</button>`;
+            }).join('');
         }
 
         function seleccionarHora(hora) {
@@ -402,7 +576,7 @@
             });
         }
 
-        function enviarReservaWhatsApp() {
+        async function enviarReservaWhatsApp() {
             const nombre = document.getElementById('nombre').value;
             const telefono = document.getElementById('telefono').value;
             const barbero = document.getElementById('barbero').value;
@@ -411,7 +585,28 @@
             const tipoCorte = document.getElementById('tipoCorte').value;
 
             if (!nombre || !telefono || !barbero || !fecha || !hora || !tipoCorte) {
-                alert('Por favor completa todos los campos');
+                alert('❌ Por favor completa todos los campos');
+                return;
+            }
+
+            // ✅ VALIDACIÓN 1: Verificar que no sea una fecha pasada
+            const hoy = new Date().toISOString().split('T')[0];
+            if (fecha < hoy) {
+                alert('❌ No puedes reservar en fechas anteriores a hoy');
+                return;
+            }
+
+            // ✅ VALIDACIÓN 2: Verificar que no haya conflicto de reserva
+            if (!validarDisponibilidad(barbero, fecha, hora)) {
+                alert(`❌ Lo siento, ${barbero} ya tiene una reserva a las ${hora} el ${fecha}.\n\nIntenta con otro barbero u otra hora.`);
+                return;
+            }
+
+            // Guardar solicitud en Google Sheets
+            const solicitudID = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
+
+            if (!solicitudID) {
+                alert('❌ Error al procesar tu solicitud. Intenta de nuevo.');
                 return;
             }
 
@@ -422,11 +617,33 @@
                 `📅 Fecha: ${fecha}\n` +
                 `⏰ Hora: ${hora}\n` +
                 `✂️ Tipo de Corte: ${tipoCorte}\n\n` +
-                `Por favor confirmar esta reserva.`;
+                `Por favor confirmar o rechazar esta reserva en Google Sheets.`;
 
             const numeroAdmin = '573233486719';
             const urlWhatsApp = `https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensaje)}`;
+
+            // Abrir WhatsApp
             window.open(urlWhatsApp, '_blank');
+
+            // Mostrar notificación
+            mostrarNotificacion('⏳ Tu solicitud fue enviada. El barbero revisará y confirmará en Google Sheets...', 'info');
+
+            // Iniciar verificación periódica (cada 10 segundos)
+            const verificador = setInterval(async () => {
+                const estado = await verificarEstadoReserva(nombre, barbero, fecha, hora);
+                if (estado !== 'pendiente') {
+                    clearInterval(verificador);
+                    // Limpiar formulario si fue aprobada
+                    if (estado === 'aprobada') {
+                        document.getElementById('formReserva').reset();
+                    }
+                }
+            }, 10000);
+
+            // Cancelar verificación después de 2 horas si no hay respuesta
+            setTimeout(() => {
+                clearInterval(verificador);
+            }, 7200000);
         }
 
         // Cargar galería de cortes
@@ -504,12 +721,61 @@
             event.target.reset();
         }
 
+        // ===== PANEL ADMIN PARA CONFIRMAR RESERVAS =====
+
+        // Comando en consola para confirmar reservas (Uso: confirmarReserva("Juan", "Leider", "2024-05-25", "09:00"))
+        window.confirmarReserva = function(nombre, barbero, fecha, hora) {
+            agregarReservaConfirmada(nombre, barbero, fecha, hora);
+            alert(`✅ Reserva de ${nombre} confirmada para ${barbero} el ${fecha} a las ${hora}`);
+        };
+
+        // Ver todas las reservas confirmadas
+        window.verReservas = function() {
+            const reservas = obtenerReservas();
+            if (reservas.length === 0) {
+                console.log('📭 No hay reservas confirmadas');
+                return;
+            }
+            console.table(reservas);
+        };
+
+        // Limpiar todas las reservas (para pruebas)
+        window.limpiarReservas = function() {
+            if (confirm('⚠️ ¿Estás seguro? Esto eliminará TODAS las reservas.')) {
+                guardarReservas([]);
+                alert('✅ Sistema de reservas reiniciado');
+            }
+        };
+
+        // Eliminar una reserva específica por ID
+        window.eliminarReserva = function(id) {
+            let reservas = obtenerReservas();
+            reservas = reservas.filter(r => r.id !== id);
+            guardarReservas(reservas);
+            alert('✅ Reserva eliminada');
+            window.verReservas();
+        };
+
         // Inicializar página
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             loadCuts();
             loadProducts();
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').setAttribute('min', hoy);
+
+            // Sincronizar con Google Sheets
+            await sincronizarReservas();
+
+            // Log de instrucciones para el admin
+            console.log('%c🔧 PANEL ADMIN - LEGRIN BARBER', 'color: #f59e0b; font-size: 16px; font-weight: bold;');
+            console.log('%c📊 Sistema conectado a Google Sheets', 'color: #10b981; font-weight: bold;');
+            console.log('%c\nInstrucciones para confirmar/rechazar reservas:', 'color: #3b82f6; font-weight: bold;');
+            console.log('%c1. Ve a tu Google Sheet "Legrin Barber - Reservas"', 'color: #60a5fa; font-size: 12px;');
+            console.log('%c2. Abre la hoja "Solicitudes"', 'color: #60a5fa; font-size: 12px;');
+            console.log('%c3. Encuentra la solicitud del cliente', 'color: #60a5fa; font-size: 12px;');
+            console.log('%c4. En la columna "Estado", cambia a "Aprobada" o "Rechazada"', 'color: #60a5fa; font-size: 12px;');
+            console.log('%c5. Si la rechazas, agrega el motivo en "Motivo Rechazo"', 'color: #60a5fa; font-size: 12px;');
+            console.log('%c\nEl cliente recibirá una notificación automática en 10-20 segundos ✅', 'color: #10b981; font-weight: bold;');
         });
     </script>
 
