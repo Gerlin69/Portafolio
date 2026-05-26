@@ -3,33 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legrin Barber - GringoLandia</title>
+    <meta name="description" content="Legrin Barber - Barbería Premium con estilo clásico y técnica moderna. Reserva tu cita online.">
+    <meta name="keywords" content="barbería, cortes de cabello, barbería premium, reservas online">
+    <meta name="theme-color" content="#000000">
+    <title>Legrin Barber | Barbería Premium - GringoLandia</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            overflow-x: hidden;
+        }
 
+        /* GRADIENTES PREMIUM */
         .gradient-amber { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
         .gradient-text { background: linear-gradient(to right, #fcd34d, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero-gradient { background: linear-gradient(to bottom, #1f2937 0%, #000 100%); }
+        .gradient-dark { background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(0, 0, 0, 1) 100%); }
 
-        /* Animaciones suave */
-        .scroll-smooth { scroll-behavior: smooth; }
-        .fade-in { animation: fadeIn 0.6s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* ANIMACIONES */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-5px); border-color: #fbbf24; }
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-        .nav-link { transition: color 0.3s ease; }
-        .nav-link:hover { color: #fbbf24; }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-        .image-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
 
-        .horario-disponible { background: #10b981; cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; text-align: center; font-size: 14px; font-weight: bold; }
-        .horario-disponible:hover { background: #059669; }
-        .horario-seleccionado { background: #f59e0b; color: #000; }
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+            }
+        }
 
         @keyframes slideIn {
             from {
@@ -42,98 +83,559 @@
             }
         }
 
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* EFECTOS HOVER PREMIUM */
+        .btn-premium {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.2);
+        }
+
+        .card-premium {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.5) 0%, rgba(17, 24, 39, 0.5) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card-premium:hover {
+            border-color: rgba(251, 191, 36, 0.3);
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.7) 100%);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            cursor: pointer;
+            aspect-ratio: 1;
+            group;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Scroll animations */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Efecto de parallax ligero */
+        .parallax {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        /* Premium input styles */
+        .input-premium {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-premium:focus {
+            border-color: rgba(251, 191, 36, 0.5);
+            background: rgba(31, 41, 55, 0.8);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+            outline: none;
+        }
+
+        .input-premium::placeholder {
+            color: rgba(209, 213, 219, 0.5);
+        }
+
+        /* Badge Premium */
+        .badge-premium {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fcd34d;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Counter animation */
+        .counter {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fcd34d, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .horario-disponible {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .horario-disponible:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .horario-seleccionado {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #000;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+        }
+
+        .horario-ocupado {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         @media (max-width: 768px) {
-            .image-gallery { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+            .image-gallery {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .nav-link {
+                font-size: 13px;
+            }
+        }
+
+        /* Smooth transitions */
+        * {
+            transition: color 0.3s ease, background-color 0.3s ease;
+        }
+
+        button {
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        /* Loading animation */
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
         }
     </style>
 </head>
-<body class="scroll-smooth">
+<body>
 
-    <!-- NAVBAR FIJA -->
-    <nav class="fixed top-0 w-full bg-black/95 backdrop-blur border-b border-gray-800 z-50">
+    <!-- NAVBAR PREMIUM -->
+    <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl border-b border-gray-800/50 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <div class="flex items-center gap-2">
-                    <div class="w-10 h-10 gradient-amber rounded-lg flex items-center justify-center font-bold text-black text-xl">L</div>
-                    <span class="text-2xl font-bold gradient-text">LEGRIN</span>
+                <div class="flex items-center gap-3 group cursor-pointer">
+                    <div class="w-10 h-10 gradient-amber rounded-xl flex items-center justify-center font-bold text-black text-lg transform group-hover:scale-110 transition">
+                        <i class="fas fa-scissors"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">LEGRIN</span>
                 </div>
 
                 <!-- Menu Desktop -->
-                <div class="hidden md:flex gap-8">
+                <div class="hidden md:flex gap-10">
                     <a href="#inicio" class="nav-link text-gray-300">Inicio</a>
-                    <a href="#cortes" class="nav-link text-gray-300">Cortes</a>
-                    <a href="#productos" class="nav-link text-gray-300">Productos</a>
+                    <a href="#sobre" class="nav-link text-gray-300">Sobre Nosotros</a>
+                    <a href="#servicios" class="nav-link text-gray-300">Servicios</a>
+                    <a href="#galeria" class="nav-link text-gray-300">Galería</a>
                     <a href="#reservar" class="nav-link text-gray-300">Reservar</a>
-                    <a href="#streams" class="nav-link text-gray-300">Streams</a>
-                    <a href="#contacto" class="nav-link text-gray-300">Contacto</a>
                 </div>
 
-                <!-- Hamburger Menu Mobile -->
-                <div class="md:hidden">
-                    <button id="menu-btn" onclick="toggleMenu()" class="text-white focus:outline-none">
+                <!-- CTA + Hamburger -->
+                <div class="flex items-center gap-4">
+                    <a href="https://wa.me/573044652515" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600/20 border border-green-500/30 text-green-400 hover:bg-green-600/30 transition text-sm font-medium">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Chat</span>
+                    </a>
+                    <button id="menu-btn" onclick="toggleMenu()" class="md:hidden text-white">
                         <i class="fas fa-bars text-2xl"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Mobile Menu -->
-            <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-gray-800">
-                <a href="#inicio" class="block py-2 text-gray-300 hover:text-amber-400">Inicio</a>
-                <a href="#cortes" class="block py-2 text-gray-300 hover:text-amber-400">Cortes</a>
-                <a href="#productos" class="block py-2 text-gray-300 hover:text-amber-400">Productos</a>
-                <a href="#reservar" class="block py-2 text-gray-300 hover:text-amber-400">Reservar</a>
-                <a href="#streams" class="block py-2 text-gray-300 hover:text-amber-400">Streams</a>
-                <a href="#contacto" class="block py-2 text-gray-300 hover:text-amber-400">Contacto</a>
+            <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-gray-800/50 space-y-2">
+                <a href="#inicio" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Inicio</a>
+                <a href="#sobre" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Sobre Nosotros</a>
+                <a href="#servicios" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Servicios</a>
+                <a href="#galeria" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Galería</a>
+                <a href="#reservar" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Reservar</a>
             </div>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <section id="inicio" class="pt-32 pb-20 px-4 hero-gradient min-h-screen flex items-center">
-        <div class="max-w-7xl mx-auto text-center w-full fade-in">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 gradient-text">LEGRIN BARBER</h1>
-            <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                Estilos clásicos con técnica moderna. Donde la precisión se encuentra con la pasión.
-            </p>
-            <div class="flex gap-4 justify-center flex-wrap">
-                <button onclick="scrollTo('reservar')" class="px-8 py-3 gradient-amber text-black font-bold rounded-lg hover:shadow-lg hover:shadow-amber-500/50 transition transform hover:scale-105">
-                    Reservar Cita
-                </button>
-                <button onclick="scrollTo('cortes')" class="px-8 py-3 border-2 border-amber-400 text-amber-400 font-bold rounded-lg hover:bg-amber-400/10 transition">
-                    Ver Catálogo
-                </button>
+    <!-- HERO SECTION PREMIUM -->
+    <section id="inicio" class="relative pt-32 pb-24 px-4 overflow-hidden">
+        <!-- Fondo animado -->
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="space-y-6 fade-in-up">
+                <div class="inline-block badge-premium">
+                    <i class="fas fa-star"></i> Barbería Premium
+                </div>
+
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
+                    <span class="gradient-text">Estilo Clásico</span><br>
+                    <span class="text-white">Técnica Moderna</span>
+                </h1>
+
+                <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                    Bienvenido a Legrin Barber, donde la precisión se encuentra con la pasión. Cada corte es una obra maestra diseñada específicamente para ti.
+                </p>
+
+                <div class="flex gap-4 justify-center flex-wrap pt-4">
+                    <button onclick="scrollTo('reservar')" class="btn-premium px-8 py-4 gradient-amber text-black font-bold rounded-xl hover:shadow-2xl hover:shadow-amber-500/30">
+                        <i class="fas fa-calendar-check mr-2"></i> Reservar Ahora
+                    </button>
+                    <button onclick="scrollTo('galeria')" class="btn-premium px-8 py-4 border-2 border-amber-400/50 text-amber-400 font-bold rounded-xl hover:border-amber-400 hover:bg-amber-400/5">
+                        <i class="fas fa-images mr-2"></i> Ver Trabajos
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
+                    <div class="scroll-animate">
+                        <div class="counter">50+</div>
+                        <p class="text-gray-400 text-sm">Clientes Mensuales</p>
+                    </div>
+                    <div class="scroll-animate" style="animation-delay: 0.2s;">
+                        <div class="counter">15+</div>
+                        <p class="text-gray-400 text-sm">Años de Experiencia</p>
+                    </div>
+                    <div class="scroll-animate" style="animation-delay: 0.4s;">
+                        <div class="counter">5⭐</div>
+                        <p class="text-gray-400 text-sm">Calificación Premium</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- SECCIÓN RESERVAR CITA -->
-    <section id="reservar" class="py-20 px-4 bg-gradient-to-b from-black to-gray-900">
-        <div class="max-w-4xl mx-auto">
+    <!-- SOBRE NOSOTROS -->
+    <section id="sobre" class="py-24 px-4 bg-gradient-to-b from-black via-gray-900/30 to-black">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="scroll-animate">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        <span class="gradient-text">Nuestro Legado</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg leading-relaxed mb-6">
+                        En Legrin Barber, no solo cortamos cabello. Creamos experiencias que transforman la confianza de nuestros clientes. Nuestro equipo de barberos expertos combina técnicas tradicionales con las tendencias más modernas.
+                    </p>
+                    <p class="text-gray-400 text-lg leading-relaxed mb-8">
+                        Cada cliente recibe atención personalizada, productos premium y un espacio donde la precisión y la pasión se encuentran en armonía perfecta.
+                    </p>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <h3 class="text-amber-400 font-bold mb-2"><i class="fas fa-check-circle mr-2"></i>Premium</h3>
+                            <p class="text-gray-400 text-sm">Equipamiento de lujo</p>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-amber-400 font-bold mb-2"><i class="fas fa-check-circle mr-2"></i>Profesional</h3>
+                            <p class="text-gray-400 text-sm">Expertos certificados</p>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-amber-400 font-bold mb-2"><i class="fas fa-check-circle mr-2"></i>Confort</h3>
+                            <p class="text-gray-400 text-sm">Ambiente relajante</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="relative h-96 rounded-2xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1631856612727-a3be4e7f3c47?w=600&h=600&fit=crop" alt="Barbería Legrin" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NUESTROS BARBEROS -->
+    <section id="barberos" class="py-24 px-4 bg-black">
+        <div class="max-w-6xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">Reservar Cita</h2>
-                <p class="text-gray-400 text-lg">Elige tu barbero, fecha y hora disponible</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Nuestros Barberos</span>
+                </h2>
+                <p class="text-gray-400 text-lg">Profesionales certificados con pasión por el detalle</p>
             </div>
 
-            <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-8 card-hover">
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="text-center scroll-animate group">
+                    <div class="relative mb-4 h-48 rounded-xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop" alt="Leider" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">Leider</h3>
+                    <p class="text-amber-400 text-sm font-semibold">Especialista</p>
+                </div>
+
+                <div class="text-center scroll-animate group" style="animation-delay: 0.1s;">
+                    <div class="relative mb-4 h-48 rounded-xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop" alt="Gringo" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">Gringo</h3>
+                    <p class="text-amber-400 text-sm font-semibold">Maestro</p>
+                </div>
+
+                <div class="text-center scroll-animate group" style="animation-delay: 0.2s;">
+                    <div class="relative mb-4 h-48 rounded-xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop" alt="Bobby" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">Bobby</h3>
+                    <p class="text-amber-400 text-sm font-semibold">Experto</p>
+                </div>
+
+                <div class="text-center scroll-animate group" style="animation-delay: 0.3s;">
+                    <div class="relative mb-4 h-48 rounded-xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop" alt="TopBoy" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">TopBoy</h3>
+                    <p class="text-amber-400 text-sm font-semibold">Artista</p>
+                </div>
+
+                <div class="text-center scroll-animate group" style="animation-delay: 0.4s;">
+                    <div class="relative mb-4 h-48 rounded-xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop" alt="Polo" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">Polo</h3>
+                    <p class="text-amber-400 text-sm font-semibold">Maestro</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section id="servicios" class="py-24 px-4 bg-gradient-to-b from-black to-gray-900/20">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Nuestros Servicios</span>
+                </h2>
+                <p class="text-gray-400 text-lg">Cada servicio diseñado para ti con precisión y cuidado</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card-premium rounded-2xl p-8 scroll-animate">
+                    <div class="w-14 h-14 gradient-amber rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-scissors text-black text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Cortes Premium</h3>
+                    <p class="text-gray-400 mb-6">Diseñamos tu look perfecto con técnicas modernas y acabados profesionales. Incluye línea de cejas y detalles.</p>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Fade Clásico</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Undercut Moderno</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Pompadour</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Personalizado</li>
+                    </ul>
+                </div>
+
+                <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="w-14 h-14 gradient-amber rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-razor text-black text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Diseño de Barba</h3>
+                    <p class="text-gray-400 mb-6">Barbas elegantes y bien definidas. Nuestros expertos diseñan la barba que complementa tu rostro perfecto.</p>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Perfilado</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Diseño personalizado</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Tratamiento premium</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Hidratación</li>
+                    </ul>
+                </div>
+
+                <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="w-14 h-14 gradient-amber rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-spa text-black text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Tratamientos</h3>
+                    <p class="text-gray-400 mb-6">Cuidados especiales para tu cabello y barba con productos premium importados de marcas líderes.</p>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Mascarillas capilares</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Hidratación profunda</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Tratamiento barba</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Alisado premium</li>
+                    </ul>
+                </div>
+
+                <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.3s;">
+                    <div class="w-14 h-14 gradient-amber rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-shopping-bag text-black text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Productos Premium</h3>
+                    <p class="text-gray-400 mb-6">Pomadas, aceites y productos de cuidado de calidad superior para mantener tu estilo en casa.</p>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Pomadas premium</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Aceites especializados</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Shampoos profesionales</li>
+                        <li><i class="fas fa-check text-amber-400 mr-2"></i>Serums capilares</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALERÍA -->
+    <section id="galeria" class="py-24 px-4 bg-black">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Nuestros Trabajos</span>
+                </h2>
+                <p class="text-gray-400 text-lg">Trabajos realizados con pasión y precisión. Cada corte cuenta una historia.</p>
+            </div>
+
+            <div class="image-gallery" id="galeria-gallery">
+                <!-- Se cargarán con JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- RESERVAR CITA -->
+    <section id="reservar" class="py-24 px-4 bg-gradient-to-b from-black to-gray-900">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Reserva tu Cita</span>
+                </h2>
+                <p class="text-gray-400 text-lg">Elige tu barbero, fecha y hora. Te esperamos.</p>
+            </div>
+
+            <div class="card-premium rounded-2xl p-8 md:p-12">
                 <form id="formReserva" class="space-y-6">
-                    <!-- Nombre -->
-                    <div>
-                        <label class="block text-sm font-bold mb-2">Tu Nombre *</label>
-                        <input type="text" id="nombre" placeholder="Ej: Juan García" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold mb-3 text-gray-200">Tu Nombre *</label>
+                            <input type="text" id="nombre" placeholder="Juan García" class="input-premium w-full" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-3 text-gray-200">Teléfono WhatsApp *</label>
+                            <input type="tel" id="telefono" placeholder="3044652515" class="input-premium w-full" required>
+                        </div>
                     </div>
 
-                    <!-- Teléfono -->
                     <div>
-                        <label class="block text-sm font-bold mb-2">Tu Teléfono WhatsApp *</label>
-                        <input type="tel" id="telefono" placeholder="Ej: 3044652515" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none">
-                    </div>
-
-                    <!-- Barbero -->
-                    <div>
-                        <label class="block text-sm font-bold mb-2">Selecciona tu Barbero *</label>
-                        <select id="barbero" required onchange="actualizarHorarios()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-amber-400 focus:outline-none">
-                            <option value="">-- Selecciona un barbero --</option>
+                        <label class="block text-sm font-bold mb-3 text-gray-200">Selecciona tu Barbero *</label>
+                        <select id="barbero" required onchange="actualizarHorarios()" class="input-premium w-full">
+                            <option value="">-- Elige un barbero --</option>
                             <option value="Leider">Leider</option>
                             <option value="Gringo">Gringo</option>
                             <option value="Bobby">Bobby</option>
@@ -142,258 +644,225 @@
                         </select>
                     </div>
 
-                    <!-- Fecha -->
-                    <div>
-                        <label class="block text-sm font-bold mb-2">Selecciona Fecha *</label>
-                        <input type="date" id="fecha" required onchange="actualizarHorarios()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-amber-400 focus:outline-none">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold mb-3 text-gray-200">Fecha *</label>
+                            <input type="date" id="fecha" required onchange="actualizarHorarios()" class="input-premium w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-3 text-gray-200">Tipo de Corte *</label>
+                            <select id="tipoCorte" required class="input-premium w-full">
+                                <option value="">-- Selecciona tipo --</option>
+                                <option value="Fade Clásico">Fade Clásico</option>
+                                <option value="Barba">Barba</option>
+                                <option value="Undercut">Undercut</option>
+                                <option value="Buzz Cut">Buzz Cut</option>
+                                <option value="Personalizado">Personalizado</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Horarios Disponibles -->
                     <div>
-                        <label class="block text-sm font-bold mb-3">Horarios Disponibles (45 min por corte) *</label>
-                        <div id="horariosContainer" class="grid grid-cols-4 md:grid-cols-6 gap-2">
-                            <p class="text-gray-400 col-span-full">Selecciona primero barbero y fecha</p>
+                        <label class="block text-sm font-bold mb-4 text-gray-200">Horarios Disponibles (45 min) *</label>
+                        <div id="horariosContainer" class="grid grid-cols-4 md:grid-cols-6 gap-3">
+                            <p class="text-gray-400 col-span-full text-center py-8">Selecciona primero barbero y fecha</p>
                         </div>
                         <input type="hidden" id="hora">
                     </div>
 
-                    <!-- Tipo de Corte -->
-                    <div>
-                        <label class="block text-sm font-bold mb-2">Tipo de Corte *</label>
-                        <select id="tipoCorte" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-amber-400 focus:outline-none">
-                            <option value="">-- Selecciona tipo de corte --</option>
-                            <option value="Fade Clásico">Fade Clásico</option>
-                            <option value="Barba">Barba</option>
-                            <option value="Undercut">Undercut</option>
-                            <option value="Buzz Cut">Buzz Cut</option>
-                            <option value="Personalizado">Personalizado</option>
-                        </select>
-                    </div>
-
-                    <!-- Botón Reservar -->
-                    <button type="button" onclick="enviarReservaWhatsApp()" class="w-full gradient-amber text-black font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-amber-500/50 transition transform hover:scale-105">
-                        📱 Enviar Solicitud por WhatsApp
+                    <button type="button" onclick="enviarReservaWhatsApp()" class="btn-premium w-full gradient-amber text-black font-bold py-4 rounded-xl text-lg hover:shadow-2xl hover:shadow-amber-500/40">
+                        <i class="fas fa-check-circle mr-2"></i> Enviar Solicitud por WhatsApp
                     </button>
 
-                    <p class="text-xs text-gray-400 text-center">
-                        Al hacer clic, se abrirá WhatsApp con tu solicitud de reserva. El administrador confirmará tu cita.
+                    <p class="text-xs text-gray-400 text-center leading-relaxed">
+                        Presionando el botón abriremos WhatsApp con tu solicitud. El administrador confirmará tu cita en Google Sheets.
                     </p>
                 </form>
             </div>
         </div>
     </section>
 
-    <!-- GALERÍA DE CORTES -->
-    <section id="cortes" class="py-20 px-4 bg-black">
+    <!-- PRODUCTOS -->
+    <section id="productos" class="py-24 px-4 bg-black">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">Nuestros Cortes</h2>
-                <p class="text-gray-400 text-lg">¡Cortes realizados con pasión chocoana!</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Productos Premium</span>
+                </h2>
+                <p class="text-gray-400 text-lg">Seleccionados especialmente para tu cuidado personal</p>
             </div>
 
-            <div class="image-gallery" id="cortes-gallery">
-                <!-- Las imágenes se cargarán aquí desde JavaScript -->
+            <div class="grid md:grid-cols-3 gap-8" id="productos-gallery">
+                <!-- Se cargarán con JavaScript -->
             </div>
         </div>
     </section>
 
-    <!-- CATÁLOGO DE PRODUCTOS -->
-    <section id="productos" class="py-20 px-4 bg-gradient-to-b from-black to-gray-900">
-        <div class="max-w-7xl mx-auto">
+    <!-- TESTIMONIOS -->
+    <section class="py-24 px-4 bg-gradient-to-b from-black to-gray-900/20">
+        <div class="max-w-6xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">Nuestros Productos</h2>
-                <p class="text-gray-400 text-lg">Calidad premium para tu cuidado personal</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Lo que Dicen Nuestros Clientes</span>
+                </h2>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="productos-gallery">
-                <!-- Los productos se cargarán aquí desde JavaScript -->
-            </div>
-        </div>
-    </section>
-
-    <!-- LIVESTREAMS -->
-    <section id="streams" class="py-20 px-4 bg-black">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">Streams en Vivo</h2>
-                <p class="text-gray-400 text-lg">Desde aquí podrás vernos si nos encontramos En Vivo</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <!-- Instagram Live -->
-                <div class="relative overflow-hidden rounded-xl h-80 bg-gradient-to-br from-pink-500 to-purple-600 p-1 card-hover">
-                    <div class="w-full h-full bg-black rounded-lg flex flex-col items-center justify-center p-6 relative group cursor-pointer">
-                        <i class="fas fa-play text-6xl mb-4 opacity-70 group-hover:opacity-100 transition"></i>
-                        <h3 class="text-2xl font-bold mb-2 text-center">Instagram Live</h3>
-                        <p class="text-gray-300 text-center">@gringolandia.co</p>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-6">
-                            <a href="https://instagram.com/gringolandia.co" target="_blank" class="w-full bg-amber-500 text-black font-bold py-2 rounded-lg hover:bg-amber-400 transition text-center block">
-                                Ver en Vivo
-                            </a>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card-premium rounded-2xl p-8 scroll-animate">
+                    <div class="flex gap-1 mb-4">
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                    </div>
+                    <p class="text-gray-300 mb-6">"Mejor barbería donde he ido. Los detalles, la atención y el ambiente son impecables. Definitivamente volveré."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gray-700"></div>
+                        <div>
+                            <p class="font-bold text-sm">Carlos M.</p>
+                            <p class="text-gray-400 text-xs">Cliente Regular</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- TikTok Live -->
-                <div class="relative overflow-hidden rounded-xl h-80 bg-gradient-to-br from-black to-gray-800 p-1 card-hover">
-                    <div class="w-full h-full bg-black rounded-lg flex flex-col items-center justify-center p-6 relative group cursor-pointer">
-                        <i class="fas fa-play text-6xl mb-4 opacity-70 group-hover:opacity-100 transition"></i>
-                        <h3 class="text-2xl font-bold mb-2 text-center">TikTok Live</h3>
-                        <p class="text-gray-300 text-center">@legrin_barber</p>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-6">
-                            <a href="https://tiktok.com/@legrin_barber" target="_blank" class="w-full bg-amber-500 text-black font-bold py-2 rounded-lg hover:bg-amber-400 transition text-center block">
-                                Ver en Vivo
-                            </a>
+                <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="flex gap-1 mb-4">
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                    </div>
+                    <p class="text-gray-300 mb-6">"Un lugar donde entienden realmente qué necesitas. El barbero escucha y entrega exactamente lo que pediste."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gray-700"></div>
+                        <div>
+                            <p class="font-bold text-sm">Miguel R.</p>
+                            <p class="text-gray-400 text-xs">Cliente Nuevo</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Facebook Live -->
-                <div class="relative overflow-hidden rounded-xl h-80 bg-gradient-to-br from-blue-600 to-blue-800 p-1 card-hover">
-                    <div class="w-full h-full bg-black rounded-lg flex flex-col items-center justify-center p-6 relative group cursor-pointer">
-                        <i class="fas fa-play text-6xl mb-4 opacity-70 group-hover:opacity-100 transition"></i>
-                        <h3 class="text-2xl font-bold mb-2 text-center">Facebook Live</h3>
-                        <p class="text-gray-300 text-center">Legrin Barber</p>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-6">
-                            <a href="https://facebook.com/legrin_barber" target="_blank" class="w-full bg-amber-500 text-black font-bold py-2 rounded-lg hover:bg-amber-400 transition text-center block">
-                                Ver en Vivo
-                            </a>
+                <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="flex gap-1 mb-4">
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i>
+                    </div>
+                    <p class="text-gray-300 mb-6">"No solo cortan cabello, crean una experiencia. Cada detalle está pensado. Altamente recomendado."</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gray-700"></div>
+                        <div>
+                            <p class="font-bold text-sm">Juan P.</p>
+                            <p class="text-gray-400 text-xs">Ejecutivo</p>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Redes Sociales -->
-            <div class="bg-gray-900 border border-amber-400 rounded-xl p-8 text-center">
-                <h3 class="text-2xl font-bold mb-4">¿Quieres ver nuestros streams?</h3>
-                <p class="text-gray-300 mb-6">Conéctate ahora en cualquiera de nuestras redes sociales para contenido exclusivo</p>
-                <div class="flex gap-4 justify-center flex-wrap">
-                    <a href="https://instagram.com/gringolandia.co" target="_blank" class="p-4 bg-gray-800 rounded-full text-pink-500 hover:text-pink-400 transition transform hover:scale-110">
-                        <i class="fab fa-instagram text-3xl"></i>
-                    </a>
-                    <a href="https://tiktok.com/@legrin_barber" target="_blank" class="p-4 bg-gray-800 rounded-full text-white hover:text-gray-300 transition transform hover:scale-110">
-                        <i class="fab fa-tiktok text-3xl"></i>
-                    </a>
-                    <a href="https://facebook.com/legrin_barber" target="_blank" class="p-4 bg-gray-800 rounded-full text-blue-500 hover:text-blue-400 transition transform hover:scale-110">
-                        <i class="fab fa-facebook text-3xl"></i>
-                    </a>
-                    <a href="https://wa.me/573044652515" target="_blank" class="p-4 bg-gray-800 rounded-full text-green-500 hover:text-green-400 transition transform hover:scale-110">
-                        <i class="fab fa-whatsapp text-3xl"></i>
-                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CONTACTO -->
-    <section id="contacto" class="py-20 px-4 bg-gradient-to-b from-black to-gray-900">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-4">¡Contáctanos!</h2>
-                <p class="text-gray-400 text-lg">Síguenos en redes o envía un mensaje directo</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <!-- Información de contacto -->
-                <div class="space-y-8">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 gradient-amber rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fab fa-whatsapp text-black text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">WhatsApp</h3>
-                            <a href="https://wa.me/573044652515" class="text-gray-400 hover:text-amber-400">+57 3044652515</a>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fab fa-instagram text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">Instagram</h3>
-                            <a href="https://instagram.com/gringolandia.co" target="_blank" class="text-gray-400 hover:text-amber-400">@gringolandia.co</a>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <i class="fab fa-facebook text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">Facebook</h3>
-                            <a href="https://facebook.com/legrin_barber" target="_blank" class="text-gray-400 hover:text-amber-400">Legrin Barber</a>
-                        </div>
+    <!-- CONTACTO FINAL -->
+    <section class="py-24 px-4 bg-black border-t border-gray-800/50">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="scroll-animate">
+                    <h3 class="text-2xl font-bold mb-6">Contacto</h3>
+                    <div class="space-y-4">
+                        <a href="https://wa.me/573044652515" class="flex items-center gap-4 text-gray-400 hover:text-amber-400 transition">
+                            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <span>+57 3044652515</span>
+                        </a>
+                        <a href="https://instagram.com/gringolandia.co" class="flex items-center gap-4 text-gray-400 hover:text-amber-400 transition">
+                            <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-400">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <span>@gringolandia.co</span>
+                        </a>
+                        <a href="https://facebook.com/legrin_barber" class="flex items-center gap-4 text-gray-400 hover:text-amber-400 transition">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                <i class="fab fa-facebook"></i>
+                            </div>
+                            <span>Legrin Barber</span>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Formulario -->
-                <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-8 card-hover">
-                    <form class="space-y-4" onsubmit="enviarFormulario(event)">
-                        <input type="text" placeholder="Tu nombre" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none" required>
-                        <input type="email" placeholder="Tu email" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none" required>
-                        <textarea placeholder="Tu mensaje" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:border-amber-400 focus:outline-none" required></textarea>
-                        <button type="submit" class="w-full gradient-amber text-black font-bold py-2 rounded-lg hover:shadow-lg hover:shadow-amber-500/50 transition">
-                            Enviar Mensaje
+                <div class="scroll-animate" style="animation-delay: 0.1s;">
+                    <h3 class="text-2xl font-bold mb-6">Horario</h3>
+                    <div class="space-y-3 text-gray-400">
+                        <p><span class="text-amber-400 font-bold">Lunes a Domingo</span></p>
+                        <p>8:00 AM - 10:00 PM</p>
+                        <p class="text-sm pt-3">Con cita previa. Tenemos flexibilidad para nuestros clientes especiales.</p>
+                    </div>
+                </div>
+
+                <div class="scroll-animate" style="animation-delay: 0.2s;">
+                    <h3 class="text-2xl font-bold mb-6">Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Suscríbete para ofertas y promociones exclusivas</p>
+                    <form class="flex gap-2">
+                        <input type="email" placeholder="Tu email" class="input-premium flex-1 text-sm" required>
+                        <button type="submit" class="gradient-amber text-black font-bold px-4 py-2 rounded-lg hover:shadow-lg transition">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
                 </div>
             </div>
+
+            <div class="border-t border-gray-800/50 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                <p class="text-gray-400 text-sm">© 2024 Legrin Barber. Todos los derechos reservados.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="text-gray-400 hover:text-amber-400 transition text-sm">Privacidad</a>
+                    <a href="#" class="text-gray-400 hover:text-amber-400 transition text-sm">Términos</a>
+                    <a href="#" class="text-gray-400 hover:text-amber-400 transition text-sm">Política</a>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="py-8 px-4 bg-black border-t border-gray-800">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-gray-500">© 2024 Legrin Barber. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-
     <!-- SCRIPTS -->
     <script>
-        // DATOS DE BARBEROS Y HORARIOS
+        // DATOS
         const barberos = ['Leider', 'Gringo', 'Bobby', 'TopBoy', 'Polo'];
         const horaInicio = 8;
         const horaFin = 22;
         const duracionCorte = 45;
 
-        // Datos de cortes
         const cuts = [
-            { id: 1, image: 'https://images.unsplash.com/photo-1599458438517-c47d1fe35288?w=500&h=500&fit=crop', title: 'Fade Clásico' },
-            { id: 2, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop', title: 'Undercut Moderno' },
-            { id: 3, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop', title: 'Pompadour' },
-            { id: 4, image: 'https://images.unsplash.com/photo-1504634712202-b4169f325185?w=500&h=500&fit=crop', title: 'Buzz Cut' },
-            { id: 5, image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&h=500&fit=crop', title: 'Textured Crop' },
-            { id: 6, image: 'https://images.unsplash.com/photo-1599458438517-c47d1fe35288?w=500&h=500&fit=crop', title: 'Slicked Back' }
+            { id: 1, image: 'https://images.unsplash.com/photo-1599458438517-c47d1fe35288?w=600&h=600&fit=crop', title: 'Fade Clásico' },
+            { id: 2, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop', title: 'Undercut Moderno' },
+            { id: 3, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop', title: 'Pompadour' },
+            { id: 4, image: 'https://images.unsplash.com/photo-1504634712202-b4169f325185?w=600&h=600&fit=crop', title: 'Buzz Cut' },
+            { id: 5, image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=600&fit=crop', title: 'Textured Crop' },
+            { id: 6, image: 'https://images.unsplash.com/photo-1599458438517-c47d1fe35288?w=600&h=600&fit=crop', title: 'Slicked Back' }
         ];
 
-        // Datos de productos (CON TUS PRECIOS)
         const products = [
-            { id: 1, name: 'Pomada Premium', price: '$40.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=300&h=300&fit=crop', description: 'Pomada fuerte para estilos clásicos' },
-            { id: 2, name: 'Aceite Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=300&h=300&fit=crop', description: 'Hidratación y brillo' },
-            { id: 3, name: 'Shampoo Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=300&h=300&fit=crop', description: 'Limpieza profunda' },
-            { id: 4, name: 'Crema Afeitar', price: '$15.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=300&h=300&fit=crop', description: 'Suave y protector' },
-            { id: 5, name: 'Clay Styling', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=300&h=300&fit=crop', description: 'Efecto mate natural' },
-            { id: 6, name: 'Serum Capilar', price: '$15.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=300&h=300&fit=crop', description: 'Reparación capilar' }
+            { id: 1, name: 'Pomada Premium', price: '$40.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=400&fit=crop', description: 'Pomada fuerte para estilos clásicos' },
+            { id: 2, name: 'Aceite Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400&h=400&fit=crop', description: 'Hidratación y brillo' },
+            { id: 3, name: 'Shampoo Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=400&h=400&fit=crop', description: 'Limpieza profunda' },
+            { id: 4, name: 'Crema Afeitar', price: '$15.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=400&h=400&fit=crop', description: 'Suave y protector' },
+            { id: 5, name: 'Clay Styling', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=400&fit=crop', description: 'Efecto mate natural' },
+            { id: 6, name: 'Serum Capilar', price: '$15.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400&h=400&fit=crop', description: 'Reparación capilar' }
         ];
 
-        // ===== SISTEMA DE RESERVAS CON VALIDACIÓN Y GOOGLE SHEETS =====
-
-        // URL del Google Apps Script
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIepuA4Uwpwm46_-ACkX0dr8WUryjrL71bwBslMGafEYR4hDPuPr8pkEJBOFFDbGU_6g/exec';
 
-        // Obtener reservas confirmadas del localStorage
+        // FUNCIONES DE RESERVAS
         function obtenerReservas() {
             const reservas = localStorage.getItem('legrinReservas');
             return reservas ? JSON.parse(reservas) : [];
         }
 
-        // Guardar reservas en localStorage
         function guardarReservas(reservas) {
             localStorage.setItem('legrinReservas', JSON.stringify(reservas));
         }
 
-        // Agregar una reserva confirmada
         function agregarReservaConfirmada(nombre, barbero, fecha, hora) {
             const reservas = obtenerReservas();
             reservas.push({
@@ -405,10 +874,8 @@
                 fechaConfirmacion: new Date().toISOString()
             });
             guardarReservas(reservas);
-            console.log('✅ Reserva confirmada agregada al sistema');
         }
 
-        // Validar disponibilidad: ¿Está ocupado este barbero a esta hora?
         function validarDisponibilidad(barbero, fecha, hora) {
             const reservas = obtenerReservas();
             const conflicto = reservas.find(r =>
@@ -416,13 +883,11 @@
                 r.fecha === fecha &&
                 r.hora === hora
             );
-            return !conflicto; // Devuelve true si está disponible, false si está ocupado
+            return !conflicto;
         }
 
-        // Guardar solicitud en Google Sheets
         async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
             try {
-                console.log('📤 Guardando solicitud en Google Sheets...');
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -435,48 +900,25 @@
                     })
                 });
 
-                if (!response.ok) {
-                    console.error('Error HTTP al guardar:', response.status);
-                    return null;
-                }
-
+                if (!response.ok) return null;
                 const data = await response.json();
-                if (data.success) {
-                    console.log('✅ Solicitud guardada con ID:', data.id);
-                    return data.id;
-                } else {
-                    console.error('Error en respuesta:', data.error);
-                    return null;
-                }
+                return data.success ? data.id : null;
             } catch (error) {
-                console.error('❌ Error al guardar en Google Sheets:', error);
+                console.error('Error:', error);
                 return null;
             }
         }
 
-        // Obtener solicitudes de Google Sheets y verificar estado
         async function obtenerSolicitudesGoogleSheets() {
             try {
                 const response = await fetch(APPS_SCRIPT_URL);
-                if (!response.ok) {
-                    console.error('Error HTTP:', response.status);
-                    return [];
-                }
                 const data = await response.json();
-
-                // Verificar que sea un array
-                if (!Array.isArray(data)) {
-                    console.warn('Google Sheets no retornó un array:', data);
-                    return [];
-                }
-                return data;
+                return Array.isArray(data) ? data : [];
             } catch (error) {
-                console.error('Error al obtener solicitudes de Google Sheets:', error);
                 return [];
             }
         }
 
-        // Verificar si una solicitud fue aprobada o rechazada
         async function verificarEstadoReserva(nombre, barbero, fecha, hora) {
             const solicitudes = await obtenerSolicitudesGoogleSheets();
             const solicitud = solicitudes.find(s =>
@@ -488,7 +930,6 @@
 
             if (solicitud) {
                 if (solicitud.Estado === 'Aprobada') {
-                    // Agregar a reservas confirmadas
                     agregarReservaConfirmada(nombre, barbero, fecha, hora);
                     mostrarNotificacion('✅ ¡Tu reserva fue CONFIRMADA! El barbero confirmó tu cita.', 'success');
                     return 'aprobada';
@@ -500,84 +941,50 @@
             return 'pendiente';
         }
 
-        // Mostrar notificaciones al cliente
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const notifDiv = document.createElement('div');
             notifDiv.style.cssText = `
                 position: fixed;
-                top: 20px;
+                top: 100px;
                 right: 20px;
-                padding: 20px;
-                border-radius: 10px;
-                font-size: 16px;
-                font-weight: bold;
+                padding: 16px 24px;
+                border-radius: 12px;
+                font-size: 14px;
+                font-weight: 600;
                 z-index: 9999;
                 animation: slideIn 0.5s ease;
                 max-width: 400px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                backdrop-filter: blur(10px);
+                border: 1px solid;
             `;
 
             if (tipo === 'success') {
-                notifDiv.style.backgroundColor = '#10b981';
-                notifDiv.style.color = 'white';
+                notifDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                notifDiv.style.color = '#10b981';
+                notifDiv.style.borderColor = '#10b981';
             } else if (tipo === 'error') {
-                notifDiv.style.backgroundColor = '#ef4444';
-                notifDiv.style.color = 'white';
-            } else if (tipo === 'info') {
-                notifDiv.style.backgroundColor = '#3b82f6';
-                notifDiv.style.color = 'white';
+                notifDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                notifDiv.style.color = '#ef4444';
+                notifDiv.style.borderColor = '#ef4444';
+            } else {
+                notifDiv.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                notifDiv.style.color = '#3b82f6';
+                notifDiv.style.borderColor = '#3b82f6';
             }
 
             notifDiv.textContent = mensaje;
             document.body.appendChild(notifDiv);
 
-            const duracion = tipo === 'success' ? 5000 : (tipo === 'error' ? 7000 : 6000);
-            setTimeout(() => {
-                notifDiv.remove();
-            }, duracion);
+            setTimeout(() => notifDiv.remove(), 5000);
         }
 
-        // Sincronizar reservas con Google Sheets al cargar la página
-        async function sincronizarReservas() {
-            try {
-                const solicitudes = await obtenerSolicitudesGoogleSheets();
-
-                if (!solicitudes || solicitudes.length === 0) {
-                    console.log('📭 No hay solicitudes en Google Sheets');
-                    return;
-                }
-
-                solicitudes.forEach(solicitud => {
-                    if (solicitud.Estado === 'Aprobada') {
-                        agregarReservaConfirmada(
-                            solicitud.Nombre,
-                            solicitud.Barbero,
-                            solicitud.Fecha,
-                            solicitud.Hora
-                        );
-                    }
-                });
-                console.log('✅ Reservas sincronizadas desde Google Sheets');
-            } catch (error) {
-                console.error('Error en sincronización:', error);
-            }
-        }
-
-        // Obtener la próxima hora de inicio después de X horas
-        function obtenerProximaHora(horaActual) {
-            const [horas, minutos] = horaActual.split(':').map(Number);
-            const proximaHora = horas + Math.ceil((minutos + duracionCorte) / 60);
-            return String(proximaHora).padStart(2, '0') + ':00';
-        }
-
-        // FUNCIONES RESERVA
         function actualizarHorarios() {
             const barbero = document.getElementById('barbero').value;
             const fecha = document.getElementById('fecha').value;
             const container = document.getElementById('horariosContainer');
 
             if (!barbero || !fecha) {
-                container.innerHTML = '<p class="text-gray-400 col-span-full">Selecciona barbero y fecha</p>';
+                container.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Selecciona barbero y fecha</p>';
                 return;
             }
 
@@ -593,15 +1000,14 @@
 
             container.innerHTML = horarios.map(h => {
                 const disponible = validarDisponibilidad(barbero, fecha, h);
-                const claseEstado = disponible ? 'horario-disponible' : 'opacity-50 bg-red-900 cursor-not-allowed';
-                const atributoDisabled = disponible ? '' : 'disabled';
-                return `<button type="button" class="${claseEstado}" onclick="seleccionarHora('${h}')" title="${disponible ? 'Disponible' : 'Ya reservado'}" ${atributoDisabled}>${h}</button>`;
+                const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
+                return `<button type="button" class="${clase}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${h}</button>`;
             }).join('');
         }
 
         function seleccionarHora(hora) {
             document.getElementById('hora').value = hora;
-            document.querySelectorAll('.horario-disponible').forEach(btn => {
+            document.querySelectorAll('.horario-disponible, .horario-ocupado').forEach(btn => {
                 btn.classList.remove('horario-seleccionado');
                 if (btn.textContent === hora) {
                     btn.classList.add('horario-seleccionado');
@@ -618,197 +1024,116 @@
             const tipoCorte = document.getElementById('tipoCorte').value;
 
             if (!nombre || !telefono || !barbero || !fecha || !hora || !tipoCorte) {
-                alert('❌ Por favor completa todos los campos');
+                mostrarNotificacion('❌ Por favor completa todos los campos', 'error');
                 return;
             }
 
-            // ✅ VALIDACIÓN 1: Verificar que no sea una fecha pasada
             const hoy = new Date().toISOString().split('T')[0];
             if (fecha < hoy) {
-                alert('❌ No puedes reservar en fechas anteriores a hoy');
+                mostrarNotificacion('❌ No puedes reservar en fechas anteriores a hoy', 'error');
                 return;
             }
 
-            // ✅ VALIDACIÓN 2: Verificar que no haya conflicto de reserva
             if (!validarDisponibilidad(barbero, fecha, hora)) {
-                alert(`❌ Lo siento, ${barbero} ya tiene una reserva a las ${hora} el ${fecha}.\n\nIntenta con otro barbero u otra hora.`);
+                mostrarNotificacion(`❌ ${barbero} ya tiene una reserva a las ${hora}`, 'error');
                 return;
             }
 
-            // Guardar solicitud en Google Sheets
             const solicitudID = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
 
             if (!solicitudID) {
-                alert('❌ Error al procesar tu solicitud. Intenta de nuevo.');
+                mostrarNotificacion('❌ Error al procesar tu solicitud', 'error');
                 return;
             }
 
-            const mensaje = `🔗 *SOLICITUD DE RESERVA* 🔗\n\n` +
-                `👤 Nombre: ${nombre}\n` +
-                `📞 Teléfono: ${telefono}\n` +
-                `💈 Barbero: ${barbero}\n` +
-                `📅 Fecha: ${fecha}\n` +
-                `⏰ Hora: ${hora}\n` +
-                `✂️ Tipo de Corte: ${tipoCorte}\n\n` +
-                `Por favor confirmar o rechazar esta reserva en Google Sheets.`;
+            const mensaje = `🔗 *SOLICITUD DE RESERVA* 🔗\n\n👤 Nombre: ${nombre}\n📞 Teléfono: ${telefono}\n💈 Barbero: ${barbero}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n✂️ Tipo: ${tipoCorte}`;
 
             const numeroAdmin = '573233486719';
-            const urlWhatsApp = `https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensaje)}`;
+            window.open(`https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
-            // Abrir WhatsApp
-            window.open(urlWhatsApp, '_blank');
+            mostrarNotificacion('⏳ Solicitud enviada. El barbero confirmará en breve...', 'info');
 
-            // Mostrar notificación
-            mostrarNotificacion('⏳ Tu solicitud fue enviada. El barbero revisará y confirmará en Google Sheets...', 'info');
-
-            // Iniciar verificación periódica (cada 10 segundos)
             const verificador = setInterval(async () => {
                 const estado = await verificarEstadoReserva(nombre, barbero, fecha, hora);
                 if (estado !== 'pendiente') {
                     clearInterval(verificador);
-                    // Limpiar formulario si fue aprobada
                     if (estado === 'aprobada') {
                         document.getElementById('formReserva').reset();
                     }
                 }
             }, 10000);
 
-            // Cancelar verificación después de 2 horas si no hay respuesta
-            setTimeout(() => {
-                clearInterval(verificador);
-            }, 7200000);
+            setTimeout(() => clearInterval(verificador), 7200000);
         }
 
-        // Cargar galería de cortes
         function loadCuts() {
-            const gallery = document.getElementById('cortes-gallery');
-            cuts.forEach(cut => {
-                const html = `
-                    <div class="relative overflow-hidden rounded-xl cursor-pointer group h-80 card-hover" onclick="viewImage('${cut.image}', '${cut.title}')">
-                        <img src="${cut.image}" alt="${cut.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
-                            <div>
-                                <h3 class="text-2xl font-bold text-white">${cut.title}</h3>
-                                <p class="text-amber-400">Click para reservar</p>
-                            </div>
+            const gallery = document.getElementById('galeria-gallery');
+            gallery.innerHTML = cuts.map(cut => `
+                <div class="gallery-item scroll-animate">
+                    <img src="${cut.image}" alt="${cut.title}" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-0 hover:opacity-100 transition duration-300 flex items-end p-6">
+                        <div>
+                            <h3 class="text-xl font-bold">${cut.title}</h3>
+                            <p class="text-amber-400 text-sm">Click para reservar</p>
                         </div>
                     </div>
-                `;
-                gallery.innerHTML += html;
-            });
+                </div>
+            `).join('');
         }
 
-        // Cargar productos
         function loadProducts() {
             const gallery = document.getElementById('productos-gallery');
-            products.forEach(product => {
-                const html = `
-                    <div class="bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700 card-hover">
-                        <div class="relative h-64 overflow-hidden">
-                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
-                            <div class="absolute top-4 right-4 gradient-amber text-black px-3 py-1 rounded-full font-bold">
-                                ${product.price}
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2">${product.name}</h3>
-                            <p class="text-gray-400 mb-4">${product.description}</p>
-                            <button class="w-full gradient-amber text-black font-bold py-2 rounded-lg hover:shadow-lg hover:shadow-amber-500/50 transition" onclick="contactForProduct('${product.name}')">
-                                Contactar para Comprar
-                            </button>
-                        </div>
+            gallery.innerHTML = products.map(product => `
+                <div class="card-premium rounded-2xl overflow-hidden scroll-animate">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy">
+                        <div class="absolute top-4 right-4 badge-premium">${product.price}</div>
                     </div>
-                `;
-                gallery.innerHTML += html;
-            });
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">${product.name}</h3>
+                        <p class="text-gray-400 text-sm mb-4">${product.description}</p>
+                        <button onclick="contactForProduct('${product.name}')" class="w-full btn-premium gradient-amber text-black font-bold py-2 rounded-lg">
+                            <i class="fas fa-shopping-bag mr-2"></i>Contactar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Toggle menú móvil
         function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('hidden');
         }
 
-        // Scroll suave
         function scrollTo(id) {
-            const element = document.getElementById(id);
-            element.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
             document.getElementById('mobile-menu').classList.add('hidden');
         }
 
-        // Ver imagen en grande
-        function viewImage(src, title) {
-            alert(`${title}\n\nEsta es una versión de demostración. Puedes actualizar las imágenes editando el archivo HTML.`);
-        }
-
-        // Contactar para producto
         function contactForProduct(productName) {
-            const phone = '573044652515';
-            window.location.href = `https://wa.me/${phone}?text=Estoy interesado en ${productName}`;
+            window.open(`https://wa.me/573044652515?text=Estoy interesado en ${productName}`, '_blank');
         }
 
-        // Enviar formulario
-        function enviarFormulario(event) {
-            event.preventDefault();
-            alert('Gracias por tu mensaje. Nos pondremos en contacto pronto.');
-            event.target.reset();
-        }
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
 
-        // ===== PANEL ADMIN PARA CONFIRMAR RESERVAS =====
-
-        // Comando en consola para confirmar reservas (Uso: confirmarReserva("Juan", "Leider", "2024-05-25", "09:00"))
-        window.confirmarReserva = function(nombre, barbero, fecha, hora) {
-            agregarReservaConfirmada(nombre, barbero, fecha, hora);
-            alert(`✅ Reserva de ${nombre} confirmada para ${barbero} el ${fecha} a las ${hora}`);
-        };
-
-        // Ver todas las reservas confirmadas
-        window.verReservas = function() {
-            const reservas = obtenerReservas();
-            if (reservas.length === 0) {
-                console.log('📭 No hay reservas confirmadas');
-                return;
-            }
-            console.table(reservas);
-        };
-
-        // Limpiar todas las reservas (para pruebas)
-        window.limpiarReservas = function() {
-            if (confirm('⚠️ ¿Estás seguro? Esto eliminará TODAS las reservas.')) {
-                guardarReservas([]);
-                alert('✅ Sistema de reservas reiniciado');
-            }
-        };
-
-        // Eliminar una reserva específica por ID
-        window.eliminarReserva = function(id) {
-            let reservas = obtenerReservas();
-            reservas = reservas.filter(r => r.id !== id);
-            guardarReservas(reservas);
-            alert('✅ Reserva eliminada');
-            window.verReservas();
-        };
-
-        // Inicializar página
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', () => {
             loadCuts();
             loadProducts();
+
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').setAttribute('min', hoy);
 
-            // Sincronizar con Google Sheets
-            await sincronizarReservas();
+            document.querySelectorAll('.scroll-animate').forEach(el => {
+                observer.observe(el);
+            });
 
-            // Log de instrucciones para el admin
-            console.log('%c🔧 PANEL ADMIN - LEGRIN BARBER', 'color: #f59e0b; font-size: 16px; font-weight: bold;');
-            console.log('%c📊 Sistema conectado a Google Sheets', 'color: #10b981; font-weight: bold;');
-            console.log('%c\nInstrucciones para confirmar/rechazar reservas:', 'color: #3b82f6; font-weight: bold;');
-            console.log('%c1. Ve a tu Google Sheet "Legrin Barber - Reservas"', 'color: #60a5fa; font-size: 12px;');
-            console.log('%c2. Abre la hoja "Solicitudes"', 'color: #60a5fa; font-size: 12px;');
-            console.log('%c3. Encuentra la solicitud del cliente', 'color: #60a5fa; font-size: 12px;');
-            console.log('%c4. En la columna "Estado", cambia a "Aprobada" o "Rechazada"', 'color: #60a5fa; font-size: 12px;');
-            console.log('%c5. Si la rechazas, agrega el motivo en "Motivo Rechazo"', 'color: #60a5fa; font-size: 12px;');
-            console.log('%c\nEl cliente recibirá una notificación automática en 10-20 segundos ✅', 'color: #10b981; font-weight: bold;');
+            console.log('✅ Legrin Barber Premium - Cargado');
         });
     </script>
 
