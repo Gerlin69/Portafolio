@@ -29,8 +29,9 @@
                 <div class="hidden md:flex gap-10">
                     <a href="#inicio"    class="nav-link text-gray-300">Inicio</a>
                     <a href="#sobre"     class="nav-link text-gray-300">Sobre Nosotros</a>
-                    <a href="#servicios" class="nav-link text-gray-300">Servicios</a>
-                    <a href="#galeria"   class="nav-link text-gray-300">Galería</a>
+                    <a href="#servicios"  class="nav-link text-gray-300">Servicios</a>
+                    <a href="#livestream" class="nav-link text-red-400">🔴 En Vivo</a>
+                    <a href="#galeria"    class="nav-link text-gray-300">Galería</a>
                     <a href="#reservar"  class="nav-link text-gray-300">Reservar</a>
                 </div>
 
@@ -50,8 +51,9 @@
             <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-gray-800/50 space-y-2">
                 <a href="#inicio"    class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Inicio</a>
                 <a href="#sobre"     class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Sobre Nosotros</a>
-                <a href="#servicios" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Servicios</a>
-                <a href="#galeria"   class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Galería</a>
+                <a href="#servicios"  class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Servicios</a>
+                <a href="#livestream" class="block py-3 px-4 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition">🔴 En Vivo</a>
+                <a href="#galeria"    class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Galería</a>
                 <a href="#reservar"  class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Reservar</a>
             </div>
         </div>
@@ -198,6 +200,178 @@
                     <p class="text-amber-400 text-sm font-semibold">Maestro</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- LIVESTREAM EN VIVO -->
+    <section id="livestream" class="py-24 px-4 bg-gradient-to-b from-black via-gray-900/20 to-black">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- Header -->
+            <div class="text-center mb-16 scroll-animate">
+                <div class="inline-block badge-premium mb-4">
+                    <i class="fas fa-broadcast-tower"></i> Transmisión en Vivo
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="gradient-text">Transmisión En Vivo</span>
+                </h2>
+                <p class="text-gray-400 text-lg">Únete a nuestros streams en tiempo real</p>
+            </div>
+
+            <!-- Grid: card grande + plataformas -->
+            <div class="grid lg:grid-cols-3 gap-8 mb-10">
+
+                <!-- Card principal (2 columnas) -->
+                <div class="lg:col-span-2 card-premium card-live rounded-2xl p-6 scroll-animate">
+                    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+                        <span class="live-badge">
+                            <span class="live-dot"></span>
+                            EN VIVO AHORA
+                        </span>
+                        <span class="viewer-badge">
+                            <i class="fas fa-eye text-amber-400 text-xs"></i>
+                            245 personas viendo
+                        </span>
+                    </div>
+
+                    <h3 class="text-xl font-bold mb-5 text-white">
+                        Leider cortando — <span class="text-amber-400">Fade Clásico en vivo</span>
+                    </h3>
+
+                    <!-- Miniatura con animación float -->
+                    <div class="live-thumbnail mb-6">
+                        <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&h=450&fit=crop" alt="Stream en vivo Legrin Barber">
+                        <div class="live-overlay"></div>
+                        <div class="absolute top-3 left-3">
+                            <span class="live-badge" style="font-size:11px; padding:4px 10px;">
+                                <span class="live-dot"></span> LIVE
+                            </span>
+                        </div>
+                        <div class="absolute bottom-3 right-3">
+                            <span class="viewer-badge" style="font-size:12px; padding:4px 10px;">
+                                <i class="fas fa-eye text-amber-400" style="font-size:10px;"></i> 245
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Botón principal -->
+                    <a href="https://instagram.com/gringolandia.co" target="_blank"
+                       class="btn-premium flex items-center justify-center gap-3 w-full py-4 rounded-xl font-bold text-lg text-white"
+                       style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                        <i class="fas fa-play-circle text-xl"></i>
+                        VER EN VIVO AHORA
+                    </a>
+                </div>
+
+                <!-- Cards de plataformas -->
+                <div class="flex flex-col gap-4">
+
+                    <!-- Instagram -->
+                    <div class="card-premium rounded-xl p-5 scroll-animate" style="animation-delay: 0.1s;">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-11 h-11 rounded-xl platform-icon-ig flex items-center justify-center text-white text-lg flex-shrink-0">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-bold text-white">Instagram Live</p>
+                                <p class="text-gray-400 text-sm truncate">@gringolandia.co</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="status-dot status-dot-live"></span>
+                            <span class="status-live text-sm font-semibold">En Vivo</span>
+                        </div>
+                        <a href="https://instagram.com/gringolandia.co" target="_blank"
+                           class="btn-premium w-full py-2 rounded-lg font-bold text-sm text-center text-white block"
+                           style="background: linear-gradient(135deg, #833ab4, #fd1d1d);">
+                            <i class="fab fa-instagram mr-2"></i>Ver Stream
+                        </a>
+                    </div>
+
+                    <!-- TikTok -->
+                    <div class="card-premium rounded-xl p-5 scroll-animate" style="animation-delay: 0.2s;">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-11 h-11 rounded-xl platform-icon-tt flex items-center justify-center text-white text-lg flex-shrink-0">
+                                <i class="fab fa-tiktok"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-bold text-white">TikTok Live</p>
+                                <p class="text-gray-400 text-sm truncate">@legrin_barber</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="status-dot status-dot-next"></span>
+                            <span class="status-next text-sm font-semibold">Próximo: 3:00 PM</span>
+                        </div>
+                        <a href="https://tiktok.com/@legrin_barber" target="_blank"
+                           class="btn-premium w-full py-2 rounded-lg font-bold text-sm text-center text-white block"
+                           style="background: linear-gradient(135deg, #010101, #69c9d0);">
+                            <i class="fab fa-tiktok mr-2"></i>Ver Stream
+                        </a>
+                    </div>
+
+                    <!-- YouTube -->
+                    <div class="card-premium rounded-xl p-5 scroll-animate" style="animation-delay: 0.3s;">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-11 h-11 rounded-xl platform-icon-yt flex items-center justify-center text-white text-lg flex-shrink-0">
+                                <i class="fab fa-youtube"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-bold text-white">YouTube Live</p>
+                                <p class="text-gray-400 text-sm truncate">Legrin Barber</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="status-dot status-dot-offline"></span>
+                            <span class="status-offline text-sm font-semibold">Offline</span>
+                        </div>
+                        <a href="https://youtube.com/@legrinbarber" target="_blank"
+                           class="btn-premium w-full py-2 rounded-lg font-bold text-sm text-center block bg-gray-700 text-gray-300">
+                            <i class="fab fa-youtube mr-2"></i>Ver Canal
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Franja de horarios y notificaciones -->
+            <div class="card-premium rounded-2xl p-6 scroll-animate">
+                <div class="grid md:grid-cols-3 gap-8 items-start text-center md:text-left">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div class="w-12 h-12 gradient-amber rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-calendar-alt text-black"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white mb-1">Transmitimos</p>
+                            <p class="text-amber-400 text-sm font-semibold">Lunes a Domingo</p>
+                            <p class="text-gray-400 text-sm">8:00 AM – 10:00 PM</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div class="w-12 h-12 gradient-amber rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-bell text-black"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white mb-1">Notificaciones</p>
+                            <p class="text-gray-400 text-sm">Síguenos en redes para recibir avisos de cada transmisión en tiempo real</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div class="w-12 h-12 gradient-amber rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fab fa-whatsapp text-black"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-white mb-1">Canal WhatsApp</p>
+                            <p class="text-gray-400 text-sm">Únete para alertas exclusivas de cada stream</p>
+                            <a href="https://wa.me/573044652515" target="_blank"
+                               class="text-amber-400 text-sm font-semibold hover:text-amber-300 transition mt-1 inline-block">
+                                Unirme al canal →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 
