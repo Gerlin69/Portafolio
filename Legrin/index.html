@@ -9,328 +9,7 @@
     <title>Legrin Barber | Barbería Premium - GringoLandia</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body {
-            background-color: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-            overflow-x: hidden;
-        }
-
-        /* GRADIENTES PREMIUM */
-        .gradient-amber { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
-        .gradient-text { background: linear-gradient(to right, #fcd34d, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .gradient-dark { background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(0, 0, 0, 1) 100%); }
-
-        /* ANIMACIONES */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .fade-in-up {
-            animation: fadeInUp 0.8s ease-out;
-        }
-
-        .slide-in-left {
-            animation: slideInLeft 0.8s ease-out;
-        }
-
-        .slide-in-right {
-            animation: slideInRight 0.8s ease-out;
-        }
-
-        .float {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        /* EFECTOS HOVER PREMIUM */
-        .btn-premium {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .btn-premium::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: left 0.3s ease;
-            z-index: -1;
-        }
-
-        .btn-premium:hover::before {
-            left: 100%;
-        }
-
-        .btn-premium:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.2);
-        }
-
-        .card-premium {
-            background: linear-gradient(135deg, rgba(31, 41, 55, 0.5) 0%, rgba(17, 24, 39, 0.5) 100%);
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .card-premium:hover {
-            border-color: rgba(251, 191, 36, 0.3);
-            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7) 0%, rgba(17, 24, 39, 0.7) 100%);
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.1);
-        }
-
-        .nav-link {
-            position: relative;
-            transition: color 0.3s ease;
-            font-weight: 500;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(to right, #fbbf24, #f59e0b);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        .image-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .gallery-item {
-            position: relative;
-            overflow: hidden;
-            border-radius: 16px;
-            cursor: pointer;
-            aspect-ratio: 1;
-        
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s cubic-bezier(0.23, 1, 0.320, 1);
-        }
-
-        .gallery-item:hover img {
-            transform: scale(1.05);
-        }
-
-        /* Scroll animations */
-        .scroll-animate {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-
-        .scroll-animate.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Efecto de parallax ligero */
-        .parallax {
-            background-attachment: fixed;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
-
-        /* Premium input styles */
-        .input-premium {
-            background: rgba(31, 41, 55, 0.5);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            color: white;
-            transition: all 0.3s ease;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            backdrop-filter: blur(10px);
-        }
-
-        .input-premium:focus {
-            border-color: rgba(251, 191, 36, 0.5);
-            background: rgba(31, 41, 55, 0.8);
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
-            outline: none;
-        }
-
-        .input-premium::placeholder {
-            color: rgba(209, 213, 219, 0.5);
-        }
-
-        /* Badge Premium */
-        .badge-premium {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            color: #fcd34d;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        /* Counter animation */
-        .counter {
-            font-size: 36px;
-            font-weight: 700;
-            background: linear-gradient(to right, #fcd34d, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .horario-disponible {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            cursor: pointer;
-            padding: 12px;
-            border-radius: 10px;
-            transition: all 0.3s;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .horario-disponible:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .horario-seleccionado {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: #000;
-            box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
-        }
-
-        .horario-ocupado {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        @media (max-width: 768px) {
-            .image-gallery {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-
-            .nav-link {
-                font-size: 13px;
-            }
-        }
-
-        /* Smooth transitions */
-        * {
-            transition: color 0.3s ease, background-color 0.3s ease;
-        }
-
-        button {
-            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
-        }
-
-        /* Loading animation */
-        .pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: .5;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
@@ -348,11 +27,11 @@
 
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex gap-10">
-                    <a href="#inicio" class="nav-link text-gray-300">Inicio</a>
-                    <a href="#sobre" class="nav-link text-gray-300">Sobre Nosotros</a>
+                    <a href="#inicio"    class="nav-link text-gray-300">Inicio</a>
+                    <a href="#sobre"     class="nav-link text-gray-300">Sobre Nosotros</a>
                     <a href="#servicios" class="nav-link text-gray-300">Servicios</a>
-                    <a href="#galeria" class="nav-link text-gray-300">Galería</a>
-                    <a href="#reservar" class="nav-link text-gray-300">Reservar</a>
+                    <a href="#galeria"   class="nav-link text-gray-300">Galería</a>
+                    <a href="#reservar"  class="nav-link text-gray-300">Reservar</a>
                 </div>
 
                 <!-- CTA + Hamburger -->
@@ -369,18 +48,17 @@
 
             <!-- Mobile Menu -->
             <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-gray-800/50 space-y-2">
-                <a href="#inicio" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Inicio</a>
-                <a href="#sobre" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Sobre Nosotros</a>
+                <a href="#inicio"    class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Inicio</a>
+                <a href="#sobre"     class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Sobre Nosotros</a>
                 <a href="#servicios" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Servicios</a>
-                <a href="#galeria" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Galería</a>
-                <a href="#reservar" class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Reservar</a>
+                <a href="#galeria"   class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Galería</a>
+                <a href="#reservar"  class="block py-3 px-4 text-gray-300 hover:text-amber-400 hover:bg-gray-800/30 rounded-lg transition">Reservar</a>
             </div>
         </div>
     </nav>
 
     <!-- HERO SECTION PREMIUM -->
     <section id="inicio" class="relative pt-32 pb-24 px-4 overflow-hidden">
-        <!-- Fondo animado -->
         <div class="absolute inset-0 -z-10">
             <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse"></div>
             <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
@@ -602,10 +280,7 @@
                 </h2>
                 <p class="text-gray-400 text-lg">Trabajos realizados con pasión y precisión. Cada corte cuenta una historia.</p>
             </div>
-
-            <div class="image-gallery" id="galeria-gallery">
-                <!-- Se cargarán con JavaScript -->
-            </div>
+            <div class="image-gallery" id="galeria-gallery"></div>
         </div>
     </section>
 
@@ -691,10 +366,7 @@
                 </h2>
                 <p class="text-gray-400 text-lg">Seleccionados especialmente para tu cuidado personal</p>
             </div>
-
-            <div class="grid md:grid-cols-3 gap-8" id="productos-gallery">
-                <!-- Se cargarán con JavaScript -->
-            </div>
+            <div class="grid md:grid-cols-3 gap-8" id="productos-gallery"></div>
         </div>
     </section>
 
@@ -765,7 +437,7 @@
         </div>
     </section>
 
-    <!-- CONTACTO FINAL -->
+    <!-- CONTACTO / FOOTER -->
     <section class="py-24 px-4 bg-black border-t border-gray-800/50">
         <div class="max-w-6xl mx-auto">
             <div class="grid md:grid-cols-3 gap-12">
@@ -825,317 +497,10 @@
         </div>
     </section>
 
-    <!-- SCRIPTS -->
-    <script>
-        // DATOS
-        const barberos = ['Leider', 'Gringo', 'Bobby', 'TopBoy', 'Polo'];
-        const horaInicio = 8;
-        const horaFin = 22;
-        const duracionCorte = 45;
-
-        const cuts = [
-            { id: 1, image: 'https://images.unsplash.com/photo-1599458438517-c47d1fe35288?w=600&h=600&fit=crop', title: 'Fade Clásico' },
-            { id: 2, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop', title: 'Undercut Moderno' },
-            { id: 3, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop', title: 'Pompadour' },
-            { id: 4, image: 'https://images.unsplash.com/photo-1504634712202-b4169f325185?w=600&h=600&fit=crop', title: 'Buzz Cut' },
-            { id: 5, image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=600&fit=crop', title: 'Textured Crop' },
-            { id: 6, image: 'https://images.unsplash.com/photo-1599458438517-c47d1fe35288?w=600&h=600&fit=crop', title: 'Slicked Back' }
-        ];
-
-        const products = [
-            { id: 1, name: 'Pomada Premium', price: '$40.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=400&fit=crop', description: 'Pomada fuerte para estilos clásicos' },
-            { id: 2, name: 'Aceite Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400&h=400&fit=crop', description: 'Hidratación y brillo' },
-            { id: 3, name: 'Shampoo Barba', price: '$20.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=400&h=400&fit=crop', description: 'Limpieza profunda' },
-            { id: 4, name: 'Crema Afeitar', price: '$15.000', image: 'https://images.unsplash.com/photo-1596510915361-a3a33ead002e?w=400&h=400&fit=crop', description: 'Suave y protector' },
-            { id: 5, name: 'Clay Styling', price: '$12.000', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=400&fit=crop', description: 'Efecto mate natural' },
-            { id: 6, name: 'Serum Capilar', price: '$15.000', image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400&h=400&fit=crop', description: 'Reparación capilar' }
-        ];
-
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIepuA4Uwpwm46_-ACkX0dr8WUryjrL71bwBslMGafEYR4hDPuPr8pkEJBOFFDbGU_6g/exec';
-
-        // FUNCIONES DE RESERVAS
-        function obtenerReservas() {
-            const reservas = localStorage.getItem('legrinReservas');
-            return reservas ? JSON.parse(reservas) : [];
-        }
-
-        function guardarReservas(reservas) {
-            localStorage.setItem('legrinReservas', JSON.stringify(reservas));
-        }
-
-        function agregarReservaConfirmada(nombre, barbero, fecha, hora) {
-            const reservas = obtenerReservas();
-            reservas.push({
-                id: Date.now(),
-                nombre: nombre,
-                barbero: barbero,
-                fecha: fecha,
-                hora: hora,
-                fechaConfirmacion: new Date().toISOString()
-            });
-            guardarReservas(reservas);
-        }
-
-        function validarDisponibilidad(barbero, fecha, hora) {
-            const reservas = obtenerReservas();
-            const conflicto = reservas.find(r =>
-                r.barbero === barbero &&
-                r.fecha === fecha &&
-                r.hora === hora
-            );
-            return !conflicto;
-        }
-
-        async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        nombre: nombre,
-                        telefono: telefono,
-                        barbero: barbero,
-                        fecha: fecha,
-                        hora: hora,
-                        tipoCorte: tipoCorte
-                    })
-                });
-
-                if (!response.ok) return null;
-                const data = await response.json();
-                return data.success ? data.id : null;
-            } catch (error) {
-                console.error('Error:', error);
-                return null;
-            }
-        }
-
-        async function obtenerSolicitudesGoogleSheets() {
-            try {
-                const response = await fetch(APPS_SCRIPT_URL);
-                const data = await response.json();
-                return Array.isArray(data) ? data : [];
-            } catch (error) {
-                return [];
-            }
-        }
-
-        async function verificarEstadoReserva(nombre, barbero, fecha, hora) {
-            const solicitudes = await obtenerSolicitudesGoogleSheets();
-            const solicitud = solicitudes.find(s =>
-                s.Nombre === nombre &&
-                s.Barbero === barbero &&
-                s.Fecha === fecha &&
-                s.Hora === hora
-            );
-
-            if (solicitud) {
-                if (solicitud.Estado === 'Aprobada') {
-                    agregarReservaConfirmada(nombre, barbero, fecha, hora);
-                    mostrarNotificacion('✅ ¡Tu reserva fue CONFIRMADA! El barbero confirmó tu cita.', 'success');
-                    return 'aprobada';
-                } else if (solicitud.Estado === 'Rechazada') {
-                    mostrarNotificacion(`❌ Tu reserva fue rechazada. Motivo: ${solicitud['Motivo Rechazo'] || 'Sin especificar'}`, 'error');
-                    return 'rechazada';
-                }
-            }
-            return 'pendiente';
-        }
-
-        function mostrarNotificacion(mensaje, tipo = 'info') {
-            const notifDiv = document.createElement('div');
-            notifDiv.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                padding: 16px 24px;
-                border-radius: 12px;
-                font-size: 14px;
-                font-weight: 600;
-                z-index: 9999;
-                animation: slideIn 0.5s ease;
-                max-width: 400px;
-                backdrop-filter: blur(10px);
-                border: 1px solid;
-            `;
-
-            if (tipo === 'success') {
-                notifDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-                notifDiv.style.color = '#10b981';
-                notifDiv.style.borderColor = '#10b981';
-            } else if (tipo === 'error') {
-                notifDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                notifDiv.style.color = '#ef4444';
-                notifDiv.style.borderColor = '#ef4444';
-            } else {
-                notifDiv.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                notifDiv.style.color = '#3b82f6';
-                notifDiv.style.borderColor = '#3b82f6';
-            }
-
-            notifDiv.textContent = mensaje;
-            document.body.appendChild(notifDiv);
-
-            setTimeout(() => notifDiv.remove(), 5000);
-        }
-
-        function actualizarHorarios() {
-            const barbero = document.getElementById('barbero').value;
-            const fecha = document.getElementById('fecha').value;
-            const container = document.getElementById('horariosContainer');
-
-            if (!barbero || !fecha) {
-                container.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Selecciona barbero y fecha</p>';
-                return;
-            }
-
-            const horarios = [];
-            for (let hora = horaInicio; hora < horaFin; hora++) {
-                for (let minuto = 0; minuto < 60; minuto += duracionCorte) {
-                    if (hora < horaFin) {
-                        const horaFormato = String(hora).padStart(2, '0') + ':' + String(minuto).padStart(2, '0');
-                        horarios.push(horaFormato);
-                    }
-                }
-            }
-
-            container.innerHTML = horarios.map(h => {
-                const disponible = validarDisponibilidad(barbero, fecha, h);
-                const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
-                return `<button type="button" class="${clase}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${h}</button>`;
-            }).join('');
-        }
-
-        function seleccionarHora(hora) {
-            document.getElementById('hora').value = hora;
-            document.querySelectorAll('.horario-disponible, .horario-ocupado').forEach(btn => {
-                btn.classList.remove('horario-seleccionado');
-                if (btn.textContent === hora) {
-                    btn.classList.add('horario-seleccionado');
-                }
-            });
-        }
-
-        async function enviarReservaWhatsApp() {
-            const nombre = document.getElementById('nombre').value;
-            const telefono = document.getElementById('telefono').value;
-            const barbero = document.getElementById('barbero').value;
-            const fecha = document.getElementById('fecha').value;
-            const hora = document.getElementById('hora').value;
-            const tipoCorte = document.getElementById('tipoCorte').value;
-
-            if (!nombre || !telefono || !barbero || !fecha || !hora || !tipoCorte) {
-                mostrarNotificacion('❌ Por favor completa todos los campos', 'error');
-                return;
-            }
-
-            const hoy = new Date().toISOString().split('T')[0];
-            if (fecha < hoy) {
-                mostrarNotificacion('❌ No puedes reservar en fechas anteriores a hoy', 'error');
-                return;
-            }
-
-            if (!validarDisponibilidad(barbero, fecha, hora)) {
-                mostrarNotificacion(`❌ ${barbero} ya tiene una reserva a las ${hora}`, 'error');
-                return;
-            }
-
-            const solicitudID = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
-
-            if (!solicitudID) {
-                mostrarNotificacion('❌ Error al procesar tu solicitud', 'error');
-                return;
-            }
-
-            const mensaje = `🔗 *SOLICITUD DE RESERVA* 🔗\n\n👤 Nombre: ${nombre}\n📞 Teléfono: ${telefono}\n💈 Barbero: ${barbero}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n✂️ Tipo: ${tipoCorte}`;
-
-            const numeroAdmin = '573233486719';
-            window.open(`https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensaje)}`, '_blank');
-
-            mostrarNotificacion('⏳ Solicitud enviada. El barbero confirmará en breve...', 'info');
-
-            const verificador = setInterval(async () => {
-                const estado = await verificarEstadoReserva(nombre, barbero, fecha, hora);
-                if (estado !== 'pendiente') {
-                    clearInterval(verificador);
-                    if (estado === 'aprobada') {
-                        document.getElementById('formReserva').reset();
-                    }
-                }
-            }, 10000);
-
-            setTimeout(() => clearInterval(verificador), 7200000);
-        }
-
-        function loadCuts() {
-            const gallery = document.getElementById('galeria-gallery');
-            gallery.innerHTML = cuts.map(cut => `
-                <div class="gallery-item scroll-animate">
-                    <img src="${cut.image}" alt="${cut.title}" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-0 hover:opacity-100 transition duration-300 flex items-end p-6">
-                        <div>
-                            <h3 class="text-xl font-bold">${cut.title}</h3>
-                            <p class="text-amber-400 text-sm">Click para reservar</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function loadProducts() {
-            const gallery = document.getElementById('productos-gallery');
-            gallery.innerHTML = products.map(product => `
-                <div class="card-premium rounded-2xl overflow-hidden scroll-animate">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy">
-                        <div class="absolute top-4 right-4 badge-premium">${product.price}</div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">${product.name}</h3>
-                        <p class="text-gray-400 text-sm mb-4">${product.description}</p>
-                        <button onclick="contactForProduct('${product.name}')" class="w-full btn-premium gradient-amber text-black font-bold py-2 rounded-lg">
-                            <i class="fas fa-shopping-bag mr-2"></i>Contactar
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleMenu() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        }
-
-        function scrollTo(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('mobile-menu').classList.add('hidden');
-        }
-
-        function contactForProduct(productName) {
-            window.open(`https://wa.me/573044652515?text=Estoy interesado en ${productName}`, '_blank');
-        }
-
-        // Scroll animations
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadCuts();
-            loadProducts();
-
-            const hoy = new Date().toISOString().split('T')[0];
-            document.getElementById('fecha').setAttribute('min', hoy);
-
-            document.querySelectorAll('.scroll-animate').forEach(el => {
-                observer.observe(el);
-            });
-
-            console.log('✅ Legrin Barber Premium - Cargado');
-        });
-    </script>
+    <!-- SCRIPTS: data → reservas → main (orden de dependencias) -->
+    <script src="js/data.js"></script>
+    <script src="js/reservas.js"></script>
+    <script src="js/main.js"></script>
 
 </body>
 </html>
