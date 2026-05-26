@@ -96,11 +96,14 @@ function actualizarHorarios() {
         return;
     }
 
+    const diaSemana = new Date(fecha + 'T12:00:00').getDay();
+    const { inicio, fin } = HORARIOS_DIA[diaSemana];
+
     const horarios = [];
-    for (let hora = HORA_INICIO; hora < HORA_FIN; hora++) {
-        for (let minuto = 0; minuto < 60; minuto += DURACION_CORTE) {
-            horarios.push(String(hora).padStart(2, '0') + ':' + String(minuto).padStart(2, '0'));
-        }
+    for (let minutos = inicio; minutos < fin; minutos += DURACION_CORTE) {
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        horarios.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
     }
 
     container.innerHTML = horarios.map(h => {

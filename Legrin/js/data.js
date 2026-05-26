@@ -1,6 +1,13 @@
 const BARBEROS = ['Leider', 'Gringo', 'Bobby', 'TopBoy', 'Polo'];
-const HORA_INICIO = 8;
-const HORA_FIN = 22;
+const HORARIOS_DIA = {
+    0: { inicio: 11 * 60,           fin: 17 * 60 },      // Domingo:   11:00 - 17:00
+    1: { inicio: 10 * 60,           fin: 19 * 60 + 30 }, // Lunes:     10:00 - 19:30
+    2: { inicio: 10 * 60,           fin: 19 * 60 + 30 }, // Martes:    10:00 - 19:30
+    3: { inicio: 10 * 60,           fin: 19 * 60 + 30 }, // Miércoles: 10:00 - 19:30
+    4: { inicio:  9 * 60,           fin: 20 * 60 },      // Jueves:     9:00 - 20:00
+    5: { inicio:  7 * 60,           fin: 21 * 60 },      // Viernes:    7:00 - 21:00
+    6: { inicio:  7 * 60,           fin: 21 * 60 },      // Sábado:     7:00 - 21:00
+};
 const DURACION_CORTE = 45;
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIepuA4Uwpwm46_-ACkX0dr8WUryjrL71bwBslMGafEYR4hDPuPr8pkEJBOFFDbGU_6g/exec';
