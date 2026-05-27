@@ -21,13 +21,10 @@ function validarDisponibilidad(barbero, fecha, hora) {
 // ─── Google Sheets ────────────────────────────────────────────────────────────
 async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
     try {
-        // no-cors evita el problema del redirect POST→GET de Apps Script
-        await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ nombre, telefono, barbero, fecha, hora, tipoCorte })
-        });
-        return true;
+        const params = new URLSearchParams({ action: 'nuevaReserva', nombre, telefono, barbero, fecha, hora, tipoCorte });
+        const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+        const data = await response.json();
+        return data.success ? data.id : null;
     } catch {
         return null;
     }

@@ -79,11 +79,9 @@
         <!-- ─── RECORDATORIOS ───────────────────────────────────────────────────── -->
         <section>
             <div class="mb-6">
-                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">WhatsApp</p>
-                <h2 class="text-3xl font-bold">Recordatorios
-                    <span class="text-lg font-normal text-gray-400 ml-2">próximas 90 min</span>
-                </h2>
-                <p class="text-gray-400 text-sm mt-1">Envía aviso al barbero antes de cada cita</p>
+                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Reservas</p>
+                <h2 class="text-3xl font-bold">Citas de Hoy</h2>
+                <p class="text-gray-400 text-sm mt-1">Todas las reservas recibidas para hoy</p>
             </div>
             <div id="recordatorios-lista"></div>
         </section>
@@ -249,17 +247,13 @@
 
         const proximas = solicitudes.filter(r => {
             const fecha = String(r.Fecha || '').substring(0, 10);
-            if (fecha !== hoy) return false;
-            const [h, m] = String(r.Hora || '').split(':').map(Number);
-            if (isNaN(h)) return false;
-            const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
-            return citaTime >= ahora && citaTime <= limite;
+            return fecha === hoy;
         }).sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
 
         if (!proximas.length) {
             lista.innerHTML = `<div class="card-premium rounded-2xl p-12 text-center">
                 <i class="fas fa-calendar-check text-3xl text-gray-700 mb-3 block"></i>
-                <p class="text-gray-500">Sin citas en las próximas 90 minutos</p>
+                <p class="text-gray-500">Sin citas para hoy</p>
             </div>`;
             return;
         }
@@ -275,14 +269,15 @@
             const horaStr = String(r.Hora || '');
             const [h, m] = horaStr.split(':').map(Number);
             const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
-            const minsFaltantes = Math.round((citaTime - ahora) / 60000);
-            const urgente = minsFaltantes <= 30;
+            const minsDiff = Math.round((citaTime - ahora) / 60000);
+            const pasada = minsDiff < 0;
+            const urgente = minsDiff >= 0 && minsDiff <= 30;
 
             return `<div class="card-premium rounded-xl p-4 flex items-center justify-between gap-4 ${urgente ? 'border-amber-500/30' : ''}">
                 <div class="flex items-center gap-4 min-w-0">
                     <div class="text-center min-w-[56px]">
-                        <p class="font-bold text-lg ${urgente ? 'text-amber-400' : 'text-white'}">${horaStr}</p>
-                        <p class="text-xs text-gray-500">${minsFaltantes}min</p>
+                        <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
+                        <p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${pasada ? 'Pasada' : minsDiff + 'min'}</p>
                     </div>
                     <div class="min-w-0">
                         <p class="font-semibold truncate">${r.Nombre || ''}</p>
