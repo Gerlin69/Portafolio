@@ -121,7 +121,7 @@ function seleccionarHora(hora) {
     });
 }
 
-async function enviarReservaWhatsApp() {
+async function realizarReserva() {
     const nombre    = document.getElementById('nombre').value;
     const telefono  = document.getElementById('telefono').value;
     const barbero   = document.getElementById('barbero').value;
@@ -146,30 +146,19 @@ async function enviarReservaWhatsApp() {
     }
 
     const btn = document.querySelector('#formReserva button[type="button"]');
-    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...'; }
 
     const solicitudID = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
 
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Realizar Reserva'; }
+
     if (!solicitudID) {
-        mostrarNotificacion('❌ Error al procesar tu solicitud', 'error');
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Enviar Solicitud por WhatsApp'; }
+        mostrarNotificacion('❌ Error al enviar la reserva. Intenta de nuevo.', 'error');
         return;
     }
 
-    const mensaje = `🔗 *SOLICITUD DE RESERVA* 🔗\n\n👤 Nombre: ${nombre}\n📞 Teléfono: ${telefono}\n💈 Barbero: ${barbero}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n✂️ Tipo: ${tipoCorte}`;
-    window.open(`https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent(mensaje)}`, '_blank');
-
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Enviar Solicitud por WhatsApp'; }
-
-    mostrarNotificacion('⏳ Solicitud enviada. El barbero confirmará en breve...', 'info');
-
-    const verificador = setInterval(async () => {
-        const estado = await verificarEstadoReserva(nombre, barbero, fecha, hora, tipoCorte);
-        if (estado !== 'pendiente') {
-            clearInterval(verificador);
-            if (estado === 'aprobada') document.getElementById('formReserva').reset();
-        }
-    }, 10000);
-
-    setTimeout(() => clearInterval(verificador), 7200000);
+    mostrarNotificacion('✅ ¡Reserva enviada! Los barberos ya pueden verla.', 'success');
+    document.getElementById('formReserva').reset();
+    document.getElementById('horariosContainer').innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Selecciona primero barbero y fecha</p>';
+    document.getElementById('hora').value = '';
 }

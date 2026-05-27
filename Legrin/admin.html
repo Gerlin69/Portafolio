@@ -234,10 +234,27 @@
         }).join('');
     }
 
-    // ─── Recordatorios ────────────────────────────────────────────────────────
-    function renderizarRecordatorios() {
-        const proximas = obtenerCitasProximas(90);
+    // ─── Recordatorios (desde Google Sheets) ─────────────────────────────────
+    async function renderizarRecordatorios() {
         const lista = document.getElementById('recordatorios-lista');
+        lista.innerHTML = `<div class="card-premium rounded-2xl p-8 text-center">
+            <i class="fas fa-spinner fa-spin text-xl text-amber-400 mb-3 block"></i>
+            <p class="text-gray-500 text-sm">Cargando citas...</p>
+        </div>`;
+
+        const solicitudes = await obtenerSolicitudesGoogleSheets();
+        const hoy = new Date().toISOString().split('T')[0];
+        const ahora = new Date();
+        const limite = new Date(ahora.getTime() + 90 * 60000);
+
+        const proximas = solicitudes.filter(r => {
+            const fecha = String(r.Fecha || '').substring(0, 10);
+            if (fecha !== hoy) return false;
+            const [h, m] = String(r.Hora || '').split(':').map(Number);
+            if (isNaN(h)) return false;
+            const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
+            return citaTime >= ahora && citaTime <= limite;
+        }).sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
 
         if (!proximas.length) {
             lista.innerHTML = `<div class="card-premium rounded-2xl p-12 text-center">
@@ -248,27 +265,28 @@
         }
 
         lista.innerHTML = `<div class="space-y-3">${proximas.map(r => {
-            const config = BARBEROS_CONFIG.find(b => b.nombre === r.barbero);
-            const mensaje = _mensajeBarbero(r, config);
+            const config = BARBEROS_CONFIG.find(b => b.nombre === r.Barbero);
+            const tipoCorte = r['Tipo de corte'] || '';
+            const mensaje = _mensajeBarbero(r, config, tipoCorte);
             const waLink = config
                 ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(mensaje)}`
                 : null;
 
-            // Calcular tiempo hasta la cita
-            const [h, m] = r.hora.split(':').map(Number);
+            const horaStr = String(r.Hora || '');
+            const [h, m] = horaStr.split(':').map(Number);
             const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
-            const minsFaltantes = Math.round((citaTime - new Date()) / 60000);
+            const minsFaltantes = Math.round((citaTime - ahora) / 60000);
             const urgente = minsFaltantes <= 30;
 
             return `<div class="card-premium rounded-xl p-4 flex items-center justify-between gap-4 ${urgente ? 'border-amber-500/30' : ''}">
                 <div class="flex items-center gap-4 min-w-0">
                     <div class="text-center min-w-[56px]">
-                        <p class="font-bold text-lg ${urgente ? 'text-amber-400' : 'text-white'}">${r.hora}</p>
+                        <p class="font-bold text-lg ${urgente ? 'text-amber-400' : 'text-white'}">${horaStr}</p>
                         <p class="text-xs text-gray-500">${minsFaltantes}min</p>
                     </div>
                     <div class="min-w-0">
-                        <p class="font-semibold truncate">${r.nombre}</p>
-                        <p class="text-gray-400 text-sm truncate">${r.barbero}${r.tipoCorte ? ' · ' + r.tipoCorte : ''}</p>
+                        <p class="font-semibold truncate">${r.Nombre || ''}</p>
+                        <p class="text-gray-400 text-sm truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
                     </div>
                 </div>
                 ${waLink
@@ -281,12 +299,13 @@
         }).join('')}</div>`;
     }
 
-    function _mensajeBarbero(reserva, config) {
-        const apodo = config ? config.key : reserva.barbero;
-        const [h, m] = reserva.hora.split(':').map(Number);
+    function _mensajeBarbero(reserva, config, tipoCorte) {
+        const apodo = config ? config.key : reserva.Barbero;
+        const horaStr = String(reserva.Hora || '');
+        const [h, m] = horaStr.split(':').map(Number);
         const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
         const mins = Math.round((citaTime - new Date()) / 60000);
-        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita en ${mins} minutos:\n\n👤 Cliente: ${reserva.nombre}\n⏰ Hora: ${reserva.hora}\n✂️ Servicio: ${reserva.tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
+        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita en ${mins} minutos:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${reserva.Hora}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
     }
 
     // ─── Modal ────────────────────────────────────────────────────────────────
