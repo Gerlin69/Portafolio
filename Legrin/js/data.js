@@ -1,4 +1,12 @@
-const BARBEROS = ['Leider V.', 'Andres M. "Gringo"', 'Freddy R "Dobby"', 'Felipe M. "Tyga"', 'Juan Diaz "Polo"'];
+const BARBEROS_CONFIG = [
+    { key: 'Leider',  nombre: 'Leider V.',          whatsapp: '573211111111' },
+    { key: 'Gringo',  nombre: 'Andres M. "Gringo"', whatsapp: '573222222222' },
+    { key: 'Bobby',   nombre: 'Freddy R "Dobby"',   whatsapp: '573233333333' },
+    { key: 'TopBoy',  nombre: 'Felipe M. "Tyga"',   whatsapp: '573244444444' },
+    { key: 'Polo',    nombre: 'Juan Diaz "Polo"',   whatsapp: '573255555555' },
+];
+const BARBEROS = BARBEROS_CONFIG.map(b => b.nombre);
+const ADMIN_PIN = '1234';
 const HORARIOS_DIA = {
     0: { inicio: 11 * 60,           fin: 19 * 60 + 30 }, // Domingo:   11:00 - 19:30
     1: { inicio: 10 * 60,           fin: 19 * 60 + 30 }, // Lunes:     10:00 - 19:30

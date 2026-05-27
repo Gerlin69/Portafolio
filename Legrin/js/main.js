@@ -56,8 +56,12 @@ const scrollObserver = new IntersectionObserver((entries) => {
 document.addEventListener('DOMContentLoaded', () => {
     loadCuts();
     loadProducts();
+    actualizarSelectBarberos();
 
     document.getElementById('fecha').setAttribute('min', new Date().toISOString().split('T')[0]);
 
     document.querySelectorAll('.scroll-animate').forEach(el => scrollObserver.observe(el));
+
+    // Actualiza la lista de barberos disponibles cada 30 segundos
+    setInterval(actualizarSelectBarberos, 30000);
 });

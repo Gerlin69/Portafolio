@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legrin — Panel Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-black text-white min-h-screen">
+
+<!-- ─── PANTALLA DE PIN ───────────────────────────────────────────────────────── -->
+<div id="auth-overlay" class="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
+    <div class="card-premium rounded-2xl p-8 w-full max-w-sm">
+        <div class="flex justify-center mb-6">
+            <img src="img/logo.png" alt="Legrin" class="h-16 w-auto">
+        </div>
+        <h2 class="text-xl font-bold text-center mb-1">Panel Administrativo</h2>
+        <p class="text-gray-500 text-sm text-center mb-8">Ingresa el PIN para continuar</p>
+
+        <input type="password" id="pin-input" placeholder="••••" maxlength="10"
+            class="input-premium w-full text-center text-2xl tracking-widest mb-3"
+            onkeydown="if(event.key==='Enter') verificarPin()">
+        <p id="pin-error" class="text-red-400 text-sm text-center mb-4" style="display:none">PIN incorrecto. Inténtalo de nuevo.</p>
+
+        <button onclick="verificarPin()" class="w-full btn-premium gradient-amber text-black font-bold py-3 rounded-xl">
+            <i class="fas fa-unlock mr-2"></i>Acceder
+        </button>
+    </div>
+</div>
+
+<!-- ─── CONTENIDO ADMIN ───────────────────────────────────────────────────────── -->
+<div id="admin-content" style="display:none">
+
+    <!-- Header -->
+    <nav class="fixed top-0 w-full border-b border-gray-800/50 z-40" style="background: rgba(0,0,0,0.9);">
+        <div class="absolute inset-0 -z-10" style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);"></div>
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="img/logo.png" alt="Legrin" class="h-10 w-auto">
+                <span class="badge-premium">ADMIN</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="last-update" class="text-gray-500 text-xs" style="display:none"></span>
+                <button onclick="actualizarTodo()"
+                    class="px-4 py-2 border border-amber-400/30 text-amber-400 rounded-lg text-sm hover:border-amber-400/60 transition">
+                    <i class="fas fa-rotate-right mr-1.5"></i>Actualizar
+                </button>
+                <button onclick="cerrarSesion()" class="text-gray-400 hover:text-red-400 transition text-sm">
+                    <i class="fas fa-right-from-bracket mr-1"></i>Salir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-16 px-4 max-w-7xl mx-auto">
+
+        <!-- ─── ESTADO DE BARBEROS ──────────────────────────────────────────────── -->
+        <section class="mb-14">
+            <div class="flex items-end justify-between mb-8">
+                <div>
+                    <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Control</p>
+                    <h2 class="text-3xl font-bold">Estado de Barberos</h2>
+                    <p class="text-gray-400 text-sm mt-1">Controla la disponibilidad en tiempo real</p>
+                </div>
+                <div class="hidden sm:flex items-center gap-5 text-xs text-gray-400">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block"></span>En Servicio
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>Fuera
+                    </span>
+                </div>
+            </div>
+            <div id="barberos-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"></div>
+        </section>
+
+        <!-- ─── RECORDATORIOS ───────────────────────────────────────────────────── -->
+        <section>
+            <div class="mb-6">
+                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">WhatsApp</p>
+                <h2 class="text-3xl font-bold">Recordatorios
+                    <span class="text-lg font-normal text-gray-400 ml-2">próximas 90 min</span>
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Envía aviso al barbero antes de cada cita</p>
+            </div>
+            <div id="recordatorios-lista"></div>
+        </section>
+
+    </main>
+</div>
+
+<!-- ─── MODAL SALIR DE SERVICIO ───────────────────────────────────────────────── -->
+<div id="modal-salida" class="fixed inset-0 bg-black/80 z-50 items-center justify-center p-4"
+    style="display:none; backdrop-filter: blur(8px);">
+    <div class="card-premium rounded-2xl p-8 w-full max-w-sm" style="animation: scaleIn 0.25s ease;">
+        <h3 class="text-lg font-bold mb-1">Salir de Servicio</h3>
+        <p id="modal-barbero-nombre" class="text-amber-400 font-semibold mb-6 text-sm"></p>
+
+        <label class="text-gray-400 text-sm mb-2 block">¿Por cuánto tiempo?</label>
+        <select id="modal-duracion" class="input-premium w-full mb-6">
+            <option value="15">15 minutos</option>
+            <option value="30" selected>30 minutos</option>
+            <option value="60">1 hora</option>
+            <option value="120">2 horas</option>
+            <option value="0">Sin tiempo estimado</option>
+        </select>
+
+        <div class="flex gap-3">
+            <button onclick="cerrarModal()"
+                class="flex-1 py-3 border border-gray-700 rounded-xl text-gray-300 hover:border-gray-500 transition font-semibold text-sm">
+                Cancelar
+            </button>
+            <button onclick="confirmarSalida()"
+                class="flex-1 py-3 bg-red-500/10 border border-red-500/40 hover:border-red-500/70 text-red-400 rounded-xl transition font-semibold text-sm">
+                <i class="fas fa-pause mr-1.5"></i>Salir
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/reservas.js"></script>
+<script src="js/barberos.js"></script>
+<script>
+    let _barberoModal = null;
+
+    // ─── Autenticación ────────────────────────────────────────────────────────
+    function verificarPin() {
+        const pin = document.getElementById('pin-input').value;
+        const errorEl = document.getElementById('pin-error');
+        if (pin === ADMIN_PIN) {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            iniciarAdmin();
+        } else {
+            errorEl.style.display = 'block';
+            document.getElementById('pin-input').value = '';
+            document.getElementById('pin-input').style.borderColor = 'rgba(239,68,68,0.6)';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+                document.getElementById('pin-input').style.borderColor = '';
+            }, 3000);
+        }
+    }
+
+    function cerrarSesion() {
+        document.getElementById('admin-content').style.display = 'none';
+        document.getElementById('auth-overlay').style.display = 'flex';
+        document.getElementById('pin-input').value = '';
+    }
+
+    // ─── Inicialización ───────────────────────────────────────────────────────
+    function iniciarAdmin() {
+        renderizarCardsBarberos();
+        renderizarRecordatorios();
+        _actualizarTimestamp();
+        setInterval(actualizarTodo, 30000);
+    }
+
+    function actualizarTodo() {
+        renderizarCardsBarberos();
+        renderizarRecordatorios();
+        _actualizarTimestamp();
+    }
+
+    function _actualizarTimestamp() {
+        const el = document.getElementById('last-update');
+        el.textContent = `Actualizado: ${new Date().toLocaleTimeString('es-CO')}`;
+        el.style.display = 'inline';
+    }
+
+    // ─── Cards de Barberos ────────────────────────────────────────────────────
+    function renderizarCardsBarberos() {
+        const estado = obtenerEstadoBarberos();
+        document.getElementById('barberos-grid').innerHTML = BARBEROS_CONFIG.map(({ key, nombre }) => {
+            const e = estado[key] || { estado: 'En Servicio', tiempoRetorno: null };
+            const enServicio = e.estado === 'En Servicio';
+            const proxCita = obtenerProximaCita(key);
+            const totalHoy = contarCitasHoy(key);
+            const restante = tiempoRestante(e.tiempoRetorno);
+            const retornoHora = horaFormateada(e.tiempoRetorno);
+
+            return `<div class="rounded-2xl p-5 border transition-all duration-300 ${enServicio
+                ? 'bg-green-900/10 border-green-500/30 hover:border-green-500/50'
+                : 'bg-red-900/10 border-red-500/30 hover:border-red-500/50'}">
+
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <p class="font-bold">${key}</p>
+                        <p class="text-xs text-gray-500 mt-0.5 leading-tight">${nombre}</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${enServicio
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-red-500/20 text-red-400'}">
+                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 ${enServicio ? 'bg-green-400 animate-pulse' : 'bg-red-400'}"></span>
+                        ${enServicio ? 'ACTIVO' : 'FUERA'}
+                    </span>
+                </div>
+
+                ${!enServicio ? `
+                <div class="bg-red-500/10 rounded-lg p-3 mb-4 text-xs text-red-300 space-y-0.5">
+                    ${retornoHora ? `<p>Regresa: <span class="font-bold">${retornoHora}</span></p>` : ''}
+                    ${restante
+                        ? `<p>Tiempo restante: <span class="font-bold">${restante}</span></p>`
+                        : `<p class="text-green-400 font-semibold">Listo para volver</p>`}
+                </div>` : `<div class="mb-4"></div>`}
+
+                ${enServicio
+                    ? `<button onclick="abrirModalSalida('${key}')"
+                        class="w-full py-2.5 rounded-xl text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/60 transition mb-4">
+                        <i class="fas fa-pause mr-1.5"></i>Salir de Servicio
+                    </button>`
+                    : `<button onclick="volverAServicio('${key}')"
+                        class="w-full py-2.5 rounded-xl text-sm font-semibold border border-green-500/30 text-green-400 hover:bg-green-500/10 hover:border-green-500/60 transition mb-4">
+                        <i class="fas fa-play mr-1.5"></i>Volver a Servicio
+                    </button>`}
+
+                <div class="space-y-2 pt-3 border-t border-gray-800 text-xs">
+                    <div class="flex justify-between text-gray-400">
+                        <span>Próxima cita</span>
+                        <span class="text-white font-medium text-right">${proxCita
+                            ? `${proxCita.hora} · ${proxCita.nombre}`
+                            : '<span class="text-gray-600">—</span>'}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-400">
+                        <span>Citas hoy</span>
+                        <span class="text-amber-400 font-bold">${totalHoy}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ─── Recordatorios ────────────────────────────────────────────────────────
+    function renderizarRecordatorios() {
+        const proximas = obtenerCitasProximas(90);
+        const lista = document.getElementById('recordatorios-lista');
+
+        if (!proximas.length) {
+            lista.innerHTML = `<div class="card-premium rounded-2xl p-12 text-center">
+                <i class="fas fa-calendar-check text-3xl text-gray-700 mb-3 block"></i>
+                <p class="text-gray-500">Sin citas en las próximas 90 minutos</p>
+            </div>`;
+            return;
+        }
+
+        lista.innerHTML = `<div class="space-y-3">${proximas.map(r => {
+            const config = BARBEROS_CONFIG.find(b => b.nombre === r.barbero);
+            const mensaje = _mensajeBarbero(r, config);
+            const waLink = config
+                ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(mensaje)}`
+                : null;
+
+            // Calcular tiempo hasta la cita
+            const [h, m] = r.hora.split(':').map(Number);
+            const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
+            const minsFaltantes = Math.round((citaTime - new Date()) / 60000);
+            const urgente = minsFaltantes <= 30;
+
+            return `<div class="card-premium rounded-xl p-4 flex items-center justify-between gap-4 ${urgente ? 'border-amber-500/30' : ''}">
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="text-center min-w-[56px]">
+                        <p class="font-bold text-lg ${urgente ? 'text-amber-400' : 'text-white'}">${r.hora}</p>
+                        <p class="text-xs text-gray-500">${minsFaltantes}min</p>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-semibold truncate">${r.nombre}</p>
+                        <p class="text-gray-400 text-sm truncate">${r.barbero}${r.tipoCorte ? ' · ' + r.tipoCorte : ''}</p>
+                    </div>
+                </div>
+                ${waLink
+                    ? `<a href="${waLink}" target="_blank"
+                        class="flex-shrink-0 px-4 py-2.5 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition flex items-center gap-2">
+                        <i class="fab fa-whatsapp"></i><span class="hidden sm:inline">Recordar</span>
+                    </a>`
+                    : `<span class="text-gray-600 text-xs flex-shrink-0">Sin número</span>`}
+            </div>`;
+        }).join('')}</div>`;
+    }
+
+    function _mensajeBarbero(reserva, config) {
+        const apodo = config ? config.key : reserva.barbero;
+        const [h, m] = reserva.hora.split(':').map(Number);
+        const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
+        const mins = Math.round((citaTime - new Date()) / 60000);
+        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita en ${mins} minutos:\n\n👤 Cliente: ${reserva.nombre}\n⏰ Hora: ${reserva.hora}\n✂️ Servicio: ${reserva.tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
+    }
+
+    // ─── Modal ────────────────────────────────────────────────────────────────
+    function abrirModalSalida(key) {
+        _barberoModal = key;
+        const config = BARBEROS_CONFIG.find(b => b.key === key);
+        document.getElementById('modal-barbero-nombre').textContent = config
+            ? `${config.key} — ${config.nombre}`
+            : key;
+        document.getElementById('modal-salida').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-salida').style.display = 'none';
+        _barberoModal = null;
+    }
+
+    function confirmarSalida() {
+        if (!_barberoModal) return;
+        const minutos = parseInt(document.getElementById('modal-duracion').value);
+        cambiarEstadoBarbero(_barberoModal, 'Fuera de Servicio', minutos);
+        cerrarModal();
+        renderizarCardsBarberos();
+    }
+
+    function volverAServicio(key) {
+        cambiarEstadoBarbero(key, 'En Servicio');
+        renderizarCardsBarberos();
+    }
+
+    document.getElementById('modal-salida').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+</script>
+</body>
+</html>
