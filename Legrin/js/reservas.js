@@ -8,9 +8,9 @@ function guardarReservas(reservas) {
     localStorage.setItem('legrinReservas', JSON.stringify(reservas));
 }
 
-function agregarReservaConfirmada(nombre, barbero, fecha, hora) {
+function agregarReservaConfirmada(nombre, barbero, fecha, hora, tipoCorte) {
     const reservas = obtenerReservas();
-    reservas.push({ id: Date.now(), nombre, barbero, fecha, hora, fechaConfirmacion: new Date().toISOString() });
+    reservas.push({ id: Date.now(), nombre, barbero, fecha, hora, tipoCorte: tipoCorte || '', fechaConfirmacion: new Date().toISOString() });
     guardarReservas(reservas);
 }
 
@@ -43,7 +43,7 @@ async function obtenerSolicitudesGoogleSheets() {
     }
 }
 
-async function verificarEstadoReserva(nombre, barbero, fecha, hora) {
+async function verificarEstadoReserva(nombre, barbero, fecha, hora, tipoCorte) {
     const solicitudes = await obtenerSolicitudesGoogleSheets();
     const solicitud = solicitudes.find(s =>
         s.Nombre === nombre && s.Barbero === barbero && s.Fecha === fecha && s.Hora === hora
@@ -52,7 +52,7 @@ async function verificarEstadoReserva(nombre, barbero, fecha, hora) {
     if (!solicitud) return 'pendiente';
 
     if (solicitud.Estado === 'Aprobada') {
-        agregarReservaConfirmada(nombre, barbero, fecha, hora);
+        agregarReservaConfirmada(nombre, barbero, fecha, hora, tipoCorte);
         mostrarNotificacion('✅ ¡Tu reserva fue CONFIRMADA! El barbero confirmó tu cita.', 'success');
         return 'aprobada';
     }
@@ -145,20 +145,26 @@ async function enviarReservaWhatsApp() {
         return;
     }
 
+    const btn = document.querySelector('#formReserva button[type="button"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+
     const solicitudID = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
 
     if (!solicitudID) {
         mostrarNotificacion('❌ Error al procesar tu solicitud', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Enviar Solicitud por WhatsApp'; }
         return;
     }
 
     const mensaje = `🔗 *SOLICITUD DE RESERVA* 🔗\n\n👤 Nombre: ${nombre}\n📞 Teléfono: ${telefono}\n💈 Barbero: ${barbero}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n✂️ Tipo: ${tipoCorte}`;
     window.open(`https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent(mensaje)}`, '_blank');
 
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Enviar Solicitud por WhatsApp'; }
+
     mostrarNotificacion('⏳ Solicitud enviada. El barbero confirmará en breve...', 'info');
 
     const verificador = setInterval(async () => {
-        const estado = await verificarEstadoReserva(nombre, barbero, fecha, hora);
+        const estado = await verificarEstadoReserva(nombre, barbero, fecha, hora, tipoCorte);
         if (estado !== 'pendiente') {
             clearInterval(verificador);
             if (estado === 'aprobada') document.getElementById('formReserva').reset();
