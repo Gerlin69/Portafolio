@@ -40,7 +40,7 @@ async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tip
 
 async function obtenerSolicitudesGoogleSheets() {
     try {
-        const response = await fetch(APPS_SCRIPT_URL);
+        const response = await fetch(`${APPS_SCRIPT_URL}?_t=${Date.now()}`);
         const data = await response.json();
         return Array.isArray(data) ? data : [];
     } catch {
