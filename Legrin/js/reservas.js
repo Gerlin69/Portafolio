@@ -18,6 +18,14 @@ function validarDisponibilidad(barbero, fecha, hora) {
     return !obtenerReservas().find(r => r.barbero === barbero && r.fecha === fecha && r.hora === hora);
 }
 
+function parsearHora(val) {
+    const str = String(val || '');
+    if (/^\d{1,2}:\d{2}$/.test(str)) return str.padStart(5, '0');
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    return str;
+}
+
 // ─── Google Sheets ────────────────────────────────────────────────────────────
 async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
     try {
@@ -83,7 +91,7 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     setTimeout(() => div.remove(), 5000);
 }
 
-function actualizarHorarios() {
+async function actualizarHorarios() {
     const barbero = document.getElementById('barbero').value;
     const fecha   = document.getElementById('fecha').value;
     const container = document.getElementById('horariosContainer');
@@ -92,6 +100,8 @@ function actualizarHorarios() {
         container.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Selecciona barbero y fecha</p>';
         return;
     }
+
+    container.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Cargando horarios...</p>';
 
     const diaSemana = new Date(fecha + 'T12:00:00').getDay();
     const { inicio, fin } = HORARIOS_DIA[diaSemana];
@@ -103,8 +113,20 @@ function actualizarHorarios() {
         horarios.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
     }
 
+    const solicitudes = await obtenerSolicitudesGoogleSheets();
+    const horasOcupadas = new Set(
+        solicitudes
+            .filter(s => {
+                if (s.Barbero !== barbero) return false;
+                if (String(s.Fecha || '').substring(0, 10) !== fecha) return false;
+                const estado = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
+                return estado !== 'Rechazada';
+            })
+            .map(s => parsearHora(s.Hora))
+    );
+
     container.innerHTML = horarios.map(h => {
-        const disponible = validarDisponibilidad(barbero, fecha, h);
+        const disponible = !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
         const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
         return `<button type="button" class="${clase}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${h}</button>`;
     }).join('');
@@ -137,13 +159,27 @@ async function realizarReserva() {
         return;
     }
 
-    if (!validarDisponibilidad(barbero, fecha, hora)) {
-        mostrarNotificacion(`❌ ${barbero} ya tiene una reserva a las ${hora}`, 'error');
+    const btn = document.getElementById('btn-reservar');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...'; }
+
+    const solicitudes = await obtenerSolicitudesGoogleSheets();
+    const yaOcupado = solicitudes.some(s => {
+        if (s.Barbero !== barbero) return false;
+        if (String(s.Fecha || '').substring(0, 10) !== fecha) return false;
+        if (parsearHora(s.Hora) !== hora) return false;
+        const estado = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
+        return estado !== 'Rechazada';
+    });
+
+    if (yaOcupado || !validarDisponibilidad(barbero, fecha, hora)) {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Realizar Reserva'; }
+        mostrarNotificacion(`❌ ${barbero} ya tiene una reserva a las ${hora}. Elige otro horario.`, 'error');
+        await actualizarHorarios();
+        document.getElementById('hora').value = '';
         return;
     }
 
-    const btn = document.getElementById('btn-reservar');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...'; }
+    if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...'; }
 
     const ok = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
 

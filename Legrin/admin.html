@@ -232,16 +232,7 @@
         }).join('');
     }
 
-    // Convierte cualquier formato de hora (HH:mm ó ISO de Sheets) a "HH:mm"
-    function parsearHora(val) {
-        const str = String(val || '');
-        if (/^\d{1,2}:\d{2}$/.test(str)) return str.padStart(5, '0');
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) {
-            return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-        }
-        return str;
-    }
+    // parsearHora viene de reservas.js
 
     // ─── Recordatorios (desde Google Sheets) ─────────────────────────────────
     async function renderizarRecordatorios() {
