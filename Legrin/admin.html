@@ -82,8 +82,8 @@
         <section>
             <div class="mb-5 sm:mb-6">
                 <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Reservas</p>
-                <h2 class="text-2xl sm:text-3xl font-bold">Citas de Hoy</h2>
-                <p class="text-gray-400 text-sm mt-1">Todas las reservas recibidas para hoy</p>
+                <h2 class="text-2xl sm:text-3xl font-bold">Próximas Citas</h2>
+                <p class="text-gray-400 text-sm mt-1">Reservas para hoy y mañana</p>
             </div>
             <div id="recordatorios-lista"></div>
         </section>
@@ -265,43 +265,34 @@
             </div>`;
             solicitudes = await obtenerSolicitudesGoogleSheets();
         }
-        const hoy = new Date().toISOString().split('T')[0];
-        const ahora = new Date();
-        const limite = new Date(ahora.getTime() + 90 * 60000);
+        const ahora  = new Date();
+        const hoy    = ahora.toISOString().split('T')[0];
+        const manana = new Date(ahora.getTime() + 86400000).toISOString().split('T')[0];
 
-        const proximas = solicitudes.filter(r => {
-            const fecha = String(r.Fecha || '').substring(0, 10);
-            return fecha === hoy;
-        }).sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
+        const citasHoy    = solicitudes.filter(r => String(r.Fecha || '').substring(0, 10) === hoy)
+            .sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
+        const citasManana = solicitudes.filter(r => String(r.Fecha || '').substring(0, 10) === manana)
+            .sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
 
-        if (!proximas.length) {
-            lista.innerHTML = `<div class="card-premium rounded-2xl p-12 text-center">
-                <i class="fas fa-calendar-check text-3xl text-gray-700 mb-3 block"></i>
-                <p class="text-gray-500">Sin citas para hoy</p>
-            </div>`;
-            return;
-        }
-
-        lista.innerHTML = `<div class="space-y-3">${proximas.map(r => {
-            const config = BARBEROS_CONFIG.find(b => b.nombre === r.Barbero);
+        function renderFila(r, isToday) {
+            const config    = BARBEROS_CONFIG.find(b => b.nombre === r.Barbero);
             const tipoCorte = r['Tipo de corte'] || '';
-            const mensaje = _mensajeBarbero(r, config, tipoCorte);
-            const waLink = config
-                ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(mensaje)}`
-                : null;
-
-            const horaStr = parsearHora(r.Hora);
-            const [h, m] = horaStr.split(':').map(Number);
-            const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
-            const minsDiff = Math.round((citaTime - ahora) / 60000);
-            const pasada = minsDiff < 0;
-            const urgente = minsDiff >= 0 && minsDiff <= 30;
-
+            const waLink    = config ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(_mensajeBarbero(r, config, tipoCorte))}` : null;
+            const horaStr   = parsearHora(r.Hora);
+            let timeLabel = '', urgente = false, pasada = false;
+            if (isToday) {
+                const [h, m] = horaStr.split(':').map(Number);
+                const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
+                const minsDiff = Math.round((citaTime - ahora) / 60000);
+                pasada  = minsDiff < 0;
+                urgente = !pasada && minsDiff <= 30;
+                timeLabel = pasada ? 'Pasada' : minsDiff + 'min';
+            }
             return `<div class="card-premium rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 sm:gap-4 ${urgente ? 'border-amber-500/30' : ''}">
                 <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div class="text-center min-w-[48px] sm:min-w-[56px]">
                         <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
-                        <p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${pasada ? 'Pasada' : minsDiff + 'min'}</p>
+                        ${isToday ? `<p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${timeLabel}</p>` : ''}
                     </div>
                     <div class="min-w-0">
                         <p class="font-semibold truncate">${r.Nombre || ''}</p>
@@ -315,16 +306,42 @@
                     </a>`
                     : `<span class="text-gray-600 text-xs flex-shrink-0">Sin número</span>`}
             </div>`;
-        }).join('')}</div>`;
+        }
+
+        function renderSeccion(citas, isToday) {
+            if (!citas.length) return `<div class="card-premium rounded-2xl p-8 text-center">
+                <i class="fas fa-calendar-check text-3xl text-gray-700 mb-3 block"></i>
+                <p class="text-gray-500 text-sm">Sin citas</p>
+            </div>`;
+            return `<div class="space-y-3">${citas.map(r => renderFila(r, isToday)).join('')}</div>`;
+        }
+
+        lista.innerHTML = `
+            <div class="mb-10">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-4">Hoy &middot; ${hoy}</p>
+                ${renderSeccion(citasHoy, true)}
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-4">Mañana &middot; ${manana}</p>
+                ${renderSeccion(citasManana, false)}
+            </div>`;
     }
 
     function _mensajeBarbero(reserva, config, tipoCorte) {
-        const apodo = config ? config.key : reserva.Barbero;
+        const apodo  = config ? config.key : reserva.Barbero;
         const horaStr = parsearHora(reserva.Hora);
-        const [h, m] = horaStr.split(':').map(Number);
-        const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
-        const mins = Math.round((citaTime - new Date()) / 60000);
-        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita en ${mins} minutos:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${reserva.Hora}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
+        const hoy = new Date().toISOString().split('T')[0];
+        const esHoy = String(reserva.Fecha || '').substring(0, 10) === hoy;
+        let cuando;
+        if (esHoy) {
+            const [h, m] = horaStr.split(':').map(Number);
+            const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
+            const mins = Math.round((citaTime - new Date()) / 60000);
+            cuando = `en ${mins} minutos`;
+        } else {
+            cuando = `mañana a las ${horaStr}`;
+        }
+        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita ${cuando}:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${horaStr}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
     }
 
     // ─── Modal ────────────────────────────────────────────────────────────────
