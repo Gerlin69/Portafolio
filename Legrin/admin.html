@@ -41,27 +41,29 @@
                 <img src="img/logo.png" alt="Legrin" class="h-10 w-auto">
                 <span class="badge-premium">ADMIN</span>
             </div>
-            <div class="flex items-center gap-4">
-                <span id="last-update" class="text-gray-500 text-xs" style="display:none"></span>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <div class="hidden sm:block">
+                    <span id="last-update" class="text-gray-500 text-xs" style="display:none"></span>
+                </div>
                 <button onclick="actualizarTodo()"
-                    class="px-4 py-2 border border-amber-400/30 text-amber-400 rounded-lg text-sm hover:border-amber-400/60 transition">
-                    <i class="fas fa-rotate-right mr-1.5"></i>Actualizar
+                    class="px-3 py-2 sm:px-4 border border-amber-400/30 text-amber-400 rounded-lg text-sm hover:border-amber-400/60 transition flex items-center gap-1.5">
+                    <i class="fas fa-rotate-right"></i><span class="hidden sm:inline">Actualizar</span>
                 </button>
-                <button onclick="cerrarSesion()" class="text-gray-400 hover:text-red-400 transition text-sm">
-                    <i class="fas fa-right-from-bracket mr-1"></i>Salir
+                <button onclick="cerrarSesion()" class="px-3 py-2 text-gray-400 hover:text-red-400 transition text-sm flex items-center gap-1">
+                    <i class="fas fa-right-from-bracket"></i><span class="hidden sm:inline">Salir</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <main class="pt-24 pb-16 px-4 max-w-7xl mx-auto">
+    <main class="pt-20 sm:pt-24 pb-10 sm:pb-16 px-3 sm:px-4 max-w-7xl mx-auto">
 
         <!-- ─── ESTADO DE BARBEROS ──────────────────────────────────────────────── -->
-        <section class="mb-14">
-            <div class="flex items-end justify-between mb-8">
+        <section class="mb-10 sm:mb-14">
+            <div class="flex items-end justify-between mb-5 sm:mb-8">
                 <div>
                     <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Control</p>
-                    <h2 class="text-3xl font-bold">Estado de Barberos</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold">Estado de Barberos</h2>
                     <p class="text-gray-400 text-sm mt-1">Controla la disponibilidad en tiempo real</p>
                 </div>
                 <div class="hidden sm:flex items-center gap-5 text-xs text-gray-400">
@@ -73,14 +75,14 @@
                     </span>
                 </div>
             </div>
-            <div id="barberos-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"></div>
+            <div id="barberos-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4"></div>
         </section>
 
         <!-- ─── RECORDATORIOS ───────────────────────────────────────────────────── -->
         <section>
-            <div class="mb-6">
+            <div class="mb-5 sm:mb-6">
                 <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Reservas</p>
-                <h2 class="text-3xl font-bold">Citas de Hoy</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold">Citas de Hoy</h2>
                 <p class="text-gray-400 text-sm mt-1">Todas las reservas recibidas para hoy</p>
             </div>
             <div id="recordatorios-lista"></div>
@@ -151,6 +153,7 @@
 
     // ─── Inicialización ───────────────────────────────────────────────────────
     function iniciarAdmin() {
+        renderizarCardsBarberos(null);
         actualizarTodo();
         setInterval(actualizarTodo, 30000);
     }
@@ -199,7 +202,7 @@
                 proxCita = obtenerProximaCita(key);
             }
 
-            return `<div class="rounded-2xl p-5 border transition-all duration-300 ${enServicio
+            return `<div class="rounded-2xl p-3 sm:p-5 border transition-all duration-300 ${enServicio
                 ? 'bg-green-900/10 border-green-500/30 hover:border-green-500/50'
                 : 'bg-red-900/10 border-red-500/30 hover:border-red-500/50'}">
 
@@ -294,9 +297,9 @@
             const pasada = minsDiff < 0;
             const urgente = minsDiff >= 0 && minsDiff <= 30;
 
-            return `<div class="card-premium rounded-xl p-4 flex items-center justify-between gap-4 ${urgente ? 'border-amber-500/30' : ''}">
-                <div class="flex items-center gap-4 min-w-0">
-                    <div class="text-center min-w-[56px]">
+            return `<div class="card-premium rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 sm:gap-4 ${urgente ? 'border-amber-500/30' : ''}">
+                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div class="text-center min-w-[48px] sm:min-w-[56px]">
                         <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
                         <p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${pasada ? 'Pasada' : minsDiff + 'min'}</p>
                     </div>
@@ -307,7 +310,7 @@
                 </div>
                 ${waLink
                     ? `<a href="${waLink}" target="_blank"
-                        class="flex-shrink-0 px-4 py-2.5 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition flex items-center gap-2">
+                        class="flex-shrink-0 px-3 py-2.5 sm:px-4 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition flex items-center gap-2">
                         <i class="fab fa-whatsapp"></i><span class="hidden sm:inline">Recordar</span>
                     </a>`
                     : `<span class="text-gray-600 text-xs flex-shrink-0">Sin número</span>`}
