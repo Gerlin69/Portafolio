@@ -128,8 +128,14 @@ async function actualizarHorarios() {
             .map(s => parsearHora(s.Hora))
     );
 
+    const ahora = new Date();
+    const hoy   = ahora.toISOString().split('T')[0];
+    const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+
     container.innerHTML = horarios.map(h => {
-        const disponible = !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
+        const [hh, mm] = h.split(':').map(Number);
+        const pasada    = fecha === hoy && (hh * 60 + mm) <= minutosAhora;
+        const disponible = !pasada && !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
         const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
         return `<button type="button" class="${clase}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${h}</button>`;
     }).join('');

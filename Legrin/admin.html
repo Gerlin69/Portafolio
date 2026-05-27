@@ -151,16 +151,15 @@
 
     // ─── Inicialización ───────────────────────────────────────────────────────
     function iniciarAdmin() {
-        renderizarCardsBarberos();
-        renderizarRecordatorios();
-        _actualizarTimestamp();
+        actualizarTodo();
         setInterval(actualizarTodo, 30000);
     }
 
     async function actualizarTodo() {
         await sincronizarEstadoDesdeSheets();
-        renderizarCardsBarberos();
-        renderizarRecordatorios();
+        const solicitudes = await obtenerSolicitudesGoogleSheets();
+        renderizarCardsBarberos(solicitudes);
+        renderizarRecordatorios(solicitudes);
         _actualizarTimestamp();
     }
 
@@ -171,15 +170,34 @@
     }
 
     // ─── Cards de Barberos ────────────────────────────────────────────────────
-    function renderizarCardsBarberos() {
+    function renderizarCardsBarberos(solicitudes = null) {
         const estado = obtenerEstadoBarberos();
+        const hoy   = new Date().toISOString().split('T')[0];
+        const ahora = new Date().toTimeString().slice(0, 5);
+
         document.getElementById('barberos-grid').innerHTML = BARBEROS_CONFIG.map(({ key, nombre }) => {
             const e = estado[key] || { estado: 'En Servicio', tiempoRetorno: null };
             const enServicio = e.estado === 'En Servicio';
-            const proxCita = obtenerProximaCita(key);
-            const totalHoy = contarCitasHoy(key);
             const restante = tiempoRestante(e.tiempoRetorno);
             const retornoHora = horaFormateada(e.tiempoRetorno);
+
+            let totalHoy, proxCita;
+            if (solicitudes) {
+                const citasHoy = solicitudes.filter(s => {
+                    const estadoSol = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
+                    return String(s.Fecha || '').substring(0, 10) === hoy
+                        && s.Barbero === nombre
+                        && estadoSol !== 'Rechazada';
+                });
+                totalHoy = citasHoy.length;
+                const proxSol = citasHoy
+                    .filter(s => parsearHora(s.Hora) >= ahora)
+                    .sort((a, b) => parsearHora(a.Hora).localeCompare(parsearHora(b.Hora)))[0];
+                proxCita = proxSol ? { hora: parsearHora(proxSol.Hora), nombre: proxSol.Nombre } : null;
+            } else {
+                totalHoy = contarCitasHoy(key);
+                proxCita = obtenerProximaCita(key);
+            }
 
             return `<div class="rounded-2xl p-5 border transition-all duration-300 ${enServicio
                 ? 'bg-green-900/10 border-green-500/30 hover:border-green-500/50'
@@ -235,14 +253,15 @@
     // parsearHora viene de reservas.js
 
     // ─── Recordatorios (desde Google Sheets) ─────────────────────────────────
-    async function renderizarRecordatorios() {
+    async function renderizarRecordatorios(solicitudes = null) {
         const lista = document.getElementById('recordatorios-lista');
-        lista.innerHTML = `<div class="card-premium rounded-2xl p-8 text-center">
-            <i class="fas fa-spinner fa-spin text-xl text-amber-400 mb-3 block"></i>
-            <p class="text-gray-500 text-sm">Cargando citas...</p>
-        </div>`;
-
-        const solicitudes = await obtenerSolicitudesGoogleSheets();
+        if (!solicitudes) {
+            lista.innerHTML = `<div class="card-premium rounded-2xl p-8 text-center">
+                <i class="fas fa-spinner fa-spin text-xl text-amber-400 mb-3 block"></i>
+                <p class="text-gray-500 text-sm">Cargando citas...</p>
+            </div>`;
+            solicitudes = await obtenerSolicitudesGoogleSheets();
+        }
         const hoy = new Date().toISOString().split('T')[0];
         const ahora = new Date();
         const limite = new Date(ahora.getTime() + 90 * 60000);
