@@ -6,7 +6,7 @@ const BARBEROS_CONFIG = [
     { key: 'Polo',    nombre: 'Juan Diaz "Polo"',   whatsapp: '573255555555' },
 ];
 const BARBEROS = BARBEROS_CONFIG.map(b => b.nombre);
-const ADMIN_PIN = '1234';
+const ADMIN_PIN = 'legrin1234';
 const HORARIOS_DIA = {
     0: { inicio: 11 * 60,           fin: 19 * 60 + 30 }, // Domingo:   11:00 - 19:30
     1: { inicio: 10 * 60,           fin: 19 * 60 + 30 }, // Lunes:     10:00 - 19:30
