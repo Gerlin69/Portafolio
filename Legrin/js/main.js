@@ -53,16 +53,19 @@ const scrollObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     loadCuts();
     loadProducts();
-    actualizarSelectBarberos();
 
     document.getElementById('fecha').setAttribute('min', new Date().toISOString().split('T')[0]);
 
     document.querySelectorAll('.scroll-animate').forEach(el => scrollObserver.observe(el));
 
-    // Cada 30s sincroniza desde Sheets (cross-device), fallback a localStorage
+    // Sincroniza estado desde Sheets al cargar para tener datos cross-device correctos
+    await sincronizarEstadoDesdeSheets();
+    actualizarSelectBarberos();
+
+    // Cada 30s re-sincroniza
     setInterval(async () => {
         await sincronizarEstadoDesdeSheets();
         actualizarSelectBarberos();
