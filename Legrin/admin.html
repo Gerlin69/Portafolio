@@ -232,6 +232,17 @@
         }).join('');
     }
 
+    // Convierte cualquier formato de hora (HH:mm ó ISO de Sheets) a "HH:mm"
+    function parsearHora(val) {
+        const str = String(val || '');
+        if (/^\d{1,2}:\d{2}$/.test(str)) return str.padStart(5, '0');
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+        return str;
+    }
+
     // ─── Recordatorios (desde Google Sheets) ─────────────────────────────────
     async function renderizarRecordatorios() {
         const lista = document.getElementById('recordatorios-lista');
@@ -266,7 +277,7 @@
                 ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(mensaje)}`
                 : null;
 
-            const horaStr = String(r.Hora || '');
+            const horaStr = parsearHora(r.Hora);
             const [h, m] = horaStr.split(':').map(Number);
             const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
             const minsDiff = Math.round((citaTime - ahora) / 60000);
@@ -296,7 +307,7 @@
 
     function _mensajeBarbero(reserva, config, tipoCorte) {
         const apodo = config ? config.key : reserva.Barbero;
-        const horaStr = String(reserva.Hora || '');
+        const horaStr = parsearHora(reserva.Hora);
         const [h, m] = horaStr.split(':').map(Number);
         const citaTime = new Date(); citaTime.setHours(h, m, 0, 0);
         const mins = Math.round((citaTime - new Date()) / 60000);
