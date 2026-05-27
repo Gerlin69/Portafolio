@@ -62,6 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.scroll-animate').forEach(el => scrollObserver.observe(el));
 
-    // Actualiza la lista de barberos disponibles cada 30 segundos
-    setInterval(actualizarSelectBarberos, 30000);
+    // Cada 30s sincroniza desde Sheets (cross-device), fallback a localStorage
+    setInterval(async () => {
+        await sincronizarEstadoDesdeSheets();
+        actualizarSelectBarberos();
+    }, 30000);
 });
