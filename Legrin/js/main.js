@@ -36,7 +36,7 @@ function toggleMenu() {
     document.getElementById('mobile-menu').classList.toggle('hidden');
 }
 
-function scrollTo(id) {
+function scrollToSection(id) {
     document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
     document.getElementById('mobile-menu').classList.add('hidden');
 }
