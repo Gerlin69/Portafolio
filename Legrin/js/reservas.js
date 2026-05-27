@@ -24,7 +24,7 @@ async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tip
         const params = new URLSearchParams({ action: 'nuevaReserva', nombre, telefono, barbero, fecha, hora, tipoCorte });
         const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
         const data = await response.json();
-        return data.success ? data.id : null;
+        return data.success ? true : null;
     } catch {
         return null;
     }
