@@ -4,7 +4,10 @@
       "PowerShell(python --version 2>$null)",
       "PowerShell(magick --version 2>$null)",
       "PowerShell(python -c \"from PIL import Image; print\\('ok'\\)\" 2>$null)",
-      "PowerShell(pip install pillow -q)"
+      "PowerShell(pip install pillow -q)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
