@@ -21,13 +21,13 @@ function validarDisponibilidad(barbero, fecha, hora) {
 // ─── Google Sheets ────────────────────────────────────────────────────────────
 async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
     try {
-        const response = await fetch(APPS_SCRIPT_URL, {
+        // no-cors evita el problema del redirect POST→GET de Apps Script
+        await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors',
             body: JSON.stringify({ nombre, telefono, barbero, fecha, hora, tipoCorte })
         });
-        if (!response.ok) return null;
-        const data = await response.json();
-        return data.success ? data.id : null;
+        return true;
     } catch {
         return null;
     }
@@ -145,15 +145,15 @@ async function realizarReserva() {
         return;
     }
 
-    const btn = document.querySelector('#formReserva button[type="button"]');
+    const btn = document.getElementById('btn-reservar');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...'; }
 
-    const solicitudID = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
+    const ok = await guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte);
 
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Realizar Reserva'; }
 
-    if (!solicitudID) {
-        mostrarNotificacion('❌ Error al enviar la reserva. Intenta de nuevo.', 'error');
+    if (!ok) {
+        mostrarNotificacion('❌ Error de red. Verifica tu conexión e intenta de nuevo.', 'error');
         return;
     }
 
