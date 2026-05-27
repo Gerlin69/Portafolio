@@ -38,7 +38,12 @@ function cambiarEstadoBarbero(key, nuevoEstado, minutosAusencia = null) {
 }
 
 // ─── Disponibilidad ───────────────────────────────────────────────────────────
-function obtenerBarberosDisponibles() {
+function obtenerBarberosDisponibles(fecha = null) {
+    const hoy = new Date().toISOString().split('T')[0];
+    // Para fechas futuras todos los barberos están disponibles para reservar
+    if (fecha && fecha > hoy) {
+        return BARBEROS_CONFIG.map(b => b.nombre);
+    }
     const estado = obtenerEstadoBarberos();
     const disponibles = [];
     BARBEROS_CONFIG.forEach(b => {
@@ -56,11 +61,11 @@ function obtenerBarberosDisponibles() {
     return disponibles;
 }
 
-function actualizarSelectBarberos() {
+function actualizarSelectBarberos(fecha = null) {
     const select = document.getElementById('barbero');
     if (!select) return;
     const valorAnterior = select.value;
-    const disponibles = obtenerBarberosDisponibles();
+    const disponibles = obtenerBarberosDisponibles(fecha);
 
     select.innerHTML = '<option value="">-- Elige un barbero --</option>';
     disponibles.forEach(nombre => {
@@ -73,8 +78,11 @@ function actualizarSelectBarberos() {
     if (valorAnterior && disponibles.includes(valorAnterior)) {
         select.value = valorAnterior;
     } else if (valorAnterior) {
-        if (typeof mostrarNotificacion === 'function')
-            mostrarNotificacion('❌ Ese barbero está fuera de servicio. Por favor elige otro disponible.', 'error');
+        const hoy = new Date().toISOString().split('T')[0];
+        if (!fecha || fecha <= hoy) {
+            if (typeof mostrarNotificacion === 'function')
+                mostrarNotificacion('❌ Ese barbero está fuera de servicio. Por favor elige otro disponible.', 'error');
+        }
         const horaInput = document.getElementById('hora');
         const container = document.getElementById('horariosContainer');
         if (horaInput) horaInput.value = '';

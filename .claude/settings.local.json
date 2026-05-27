@@ -8,7 +8,9 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\USUARIO\\\\Documents\\\\GitHub\\\\Portafolio\\\\Legrin\" -Recurse -Filter \"*.js\")",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }

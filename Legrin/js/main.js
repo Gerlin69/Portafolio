@@ -57,17 +57,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadCuts();
     loadProducts();
 
-    document.getElementById('fecha').setAttribute('min', new Date().toISOString().split('T')[0]);
+    // Si el horario de hoy ya terminó, pre-seleccionar mañana
+    const ahora = new Date();
+    const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+    const horarioDia = HORARIOS_DIA[ahora.getDay()];
+    let fechaInicial;
+    if (minutosActuales >= horarioDia.fin) {
+        const manana = new Date(ahora);
+        manana.setDate(manana.getDate() + 1);
+        fechaInicial = manana.toISOString().split('T')[0];
+    } else {
+        fechaInicial = ahora.toISOString().split('T')[0];
+    }
+    const fechaInput = document.getElementById('fecha');
+    fechaInput.setAttribute('min', fechaInicial);
+    fechaInput.value = fechaInicial;
 
     document.querySelectorAll('.scroll-animate').forEach(el => scrollObserver.observe(el));
 
     // Sincroniza estado desde Sheets al cargar para tener datos cross-device correctos
     await sincronizarEstadoDesdeSheets();
-    actualizarSelectBarberos();
+    actualizarSelectBarberos(fechaInicial);
 
-    // Cada 30s re-sincroniza
+    // Cada 30s re-sincroniza con la fecha actualmente seleccionada
     setInterval(async () => {
         await sincronizarEstadoDesdeSheets();
-        actualizarSelectBarberos();
+        const fechaSeleccionada = document.getElementById('fecha')?.value || null;
+        actualizarSelectBarberos(fechaSeleccionada);
     }, 30000);
 });

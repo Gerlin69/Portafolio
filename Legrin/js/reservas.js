@@ -101,6 +101,9 @@ async function actualizarHorarios() {
         return;
     }
 
+    // Refresca la lista de barberos según si la fecha es hoy o futura
+    if (typeof actualizarSelectBarberos === 'function') actualizarSelectBarberos(fecha);
+
     container.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Cargando horarios...</p>';
 
     const diaSemana = new Date(fecha + 'T12:00:00').getDay();
