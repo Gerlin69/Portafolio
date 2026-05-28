@@ -25,6 +25,23 @@ function formatearHora12h(hora24) {
     return `${h12}:${String(m).padStart(2, '0')} ${periodo}`;
 }
 
+function obtenerDiasNoLaborables(solicitudes) {
+    const estado = {};
+    solicitudes.forEach(s => {
+        const fecha = String(s.Fecha || '').substring(0, 10);
+        if (s.Nombre === '__DIA_LIBRE__')   estado[fecha] = 'cerrado';
+        if (s.Nombre === '__DIA_ABIERTO__') estado[fecha] = 'abierto';
+    });
+    // Merge localStorage (admin device, fallback cuando Sheets no acepta el marcador)
+    try {
+        const local = JSON.parse(localStorage.getItem('legrinDiasLibres') || '{}');
+        Object.entries(local).forEach(([fecha, { estado: est }]) => {
+            if (!(fecha in estado)) estado[fecha] = est;
+        });
+    } catch {}
+    return Object.keys(estado).filter(f => estado[f] === 'cerrado');
+}
+
 function parsearHora(val) {
     const str = String(val || '');
     if (/^\d{1,2}:\d{2}$/.test(str)) return str.padStart(5, '0');
@@ -124,6 +141,17 @@ async function actualizarHorarios() {
     }
 
     const solicitudes = await obtenerSolicitudesGoogleSheets();
+
+    if (obtenerDiasNoLaborables(solicitudes).includes(fecha)) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-10">
+                <i class="fas fa-store-slash text-4xl text-red-400 mb-4 block"></i>
+                <p class="text-red-400 font-semibold text-lg">La barbería estará cerrada este día</p>
+                <p class="text-gray-500 text-sm mt-2">Por favor selecciona otra fecha</p>
+            </div>`;
+        return;
+    }
+
     const horasOcupadas = new Set(
         solicitudes
             .filter(s => {
@@ -180,6 +208,14 @@ async function realizarReserva() {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Verificando...'; }
 
     const solicitudes = await obtenerSolicitudesGoogleSheets();
+
+    if (obtenerDiasNoLaborables(solicitudes).includes(fecha)) {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Realizar Reserva'; }
+        mostrarNotificacion('❌ La barbería estará cerrada ese día. Por favor elige otra fecha.', 'error');
+        await actualizarHorarios();
+        return;
+    }
+
     const yaOcupado = solicitudes.some(s => {
         if (s.Barbero !== barbero) return false;
         if (String(s.Fecha || '').substring(0, 10) !== fecha) return false;

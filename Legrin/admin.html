@@ -88,6 +88,47 @@
             <div id="recordatorios-lista"></div>
         </section>
 
+        <!-- ─── DÍAS NO LABORABLES ────────────────────────────────────────────── -->
+        <section class="mb-10 sm:mb-14">
+            <div class="mb-5 sm:mb-6">
+                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Gestión</p>
+                <h2 class="text-2xl sm:text-3xl font-bold">Días No Laborables</h2>
+                <p class="text-gray-400 text-sm mt-1">Bloquea días por vacaciones, emergencias o descanso</p>
+            </div>
+            <div class="card-premium rounded-2xl p-5 sm:p-6 mb-5">
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold mb-2 text-gray-200">Fecha a cerrar</label>
+                        <input type="date" id="dia-libre-fecha" class="input-premium w-full">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold mb-2 text-gray-200">Motivo</label>
+                        <select id="dia-libre-motivo" class="input-premium w-full">
+                            <option value="Día libre">Día libre</option>
+                            <option value="Vacaciones">Vacaciones</option>
+                            <option value="Emergencia">Emergencia</option>
+                            <option value="Feriado">Feriado</option>
+                        </select>
+                    </div>
+                    <button id="btn-cerrar-dia" onclick="cerrarDia()"
+                        class="sm:flex-shrink-0 w-full sm:w-auto px-5 py-3 gradient-amber text-black font-bold rounded-xl hover:opacity-90 transition whitespace-nowrap">
+                        <i class="fas fa-lock mr-2"></i>Marcar Cerrado
+                    </button>
+                </div>
+            </div>
+            <div id="dias-libres-lista" class="space-y-3"></div>
+        </section>
+
+        <!-- ─── REGISTRO MENSUAL ──────────────────────────────────────────────── -->
+        <section class="mb-10 sm:mb-14">
+            <div class="mb-5 sm:mb-6">
+                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Historial</p>
+                <h2 class="text-2xl sm:text-3xl font-bold">Registro Mensual</h2>
+                <p class="text-gray-400 text-sm mt-1">Cortes realizados por mes</p>
+            </div>
+            <div id="registro-mensual-container" class="space-y-4"></div>
+        </section>
+
     </main>
 </div>
 
@@ -154,6 +195,7 @@
     // ─── Inicialización ───────────────────────────────────────────────────────
     function iniciarAdmin() {
         renderizarCardsBarberos(null);
+        renderizarDiasNoLaborables([]);
         actualizarTodo();
         setInterval(actualizarTodo, 30000);
     }
@@ -163,6 +205,8 @@
         const solicitudes = await obtenerSolicitudesGoogleSheets();
         renderizarCardsBarberos(solicitudes);
         renderizarRecordatorios(solicitudes);
+        renderizarDiasNoLaborables(solicitudes);
+        renderizarRegistroMensual(solicitudes);
         _actualizarTimestamp();
     }
 
@@ -175,7 +219,8 @@
     // ─── Cards de Barberos ────────────────────────────────────────────────────
     function renderizarCardsBarberos(solicitudes = null) {
         const estado = obtenerEstadoBarberos();
-        const hoy   = new Date().toISOString().split('T')[0];
+        const _hoyD = new Date();
+        const hoy   = `${_hoyD.getFullYear()}-${String(_hoyD.getMonth()+1).padStart(2,'0')}-${String(_hoyD.getDate()).padStart(2,'0')}`;
         const ahora = new Date().toTimeString().slice(0, 5);
 
         document.getElementById('barberos-grid').innerHTML = BARBEROS_CONFIG.map(({ key, nombre }) => {
@@ -266,12 +311,14 @@
             solicitudes = await obtenerSolicitudesGoogleSheets();
         }
         const ahora  = new Date();
-        const hoy    = ahora.toISOString().split('T')[0];
-        const manana = new Date(ahora.getTime() + 86400000).toISOString().split('T')[0];
+        const hoy    = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
+        const mananaDate = new Date(ahora); mananaDate.setDate(ahora.getDate() + 1);
+        const manana = `${mananaDate.getFullYear()}-${String(mananaDate.getMonth()+1).padStart(2,'0')}-${String(mananaDate.getDate()).padStart(2,'0')}`;
+        const reales = solicitudes.filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__');
 
-        const citasHoy    = solicitudes.filter(r => String(r.Fecha || '').substring(0, 10) === hoy)
+        const citasHoy    = reales.filter(r => String(r.Fecha || '').substring(0, 10) === hoy)
             .sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
-        const citasManana = solicitudes.filter(r => String(r.Fecha || '').substring(0, 10) === manana)
+        const citasManana = reales.filter(r => String(r.Fecha || '').substring(0, 10) === manana)
             .sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
 
         function renderFila(r, isToday) {
@@ -375,6 +422,182 @@
     document.getElementById('modal-salida').addEventListener('click', function(e) {
         if (e.target === this) cerrarModal();
     });
+
+    // ─── Días No Laborables ───────────────────────────────────────────────────
+
+    function renderizarDiasNoLaborables(solicitudes) {
+        const diasCerrados = obtenerDiasNoLaborables(solicitudes);
+        const ahora = new Date();
+        const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
+        const proximos = diasCerrados.filter(f => f >= hoy).sort();
+        const container = document.getElementById('dias-libres-lista');
+        if (!container) return;
+        if (!proximos.length) {
+            container.innerHTML = `<div class="card-premium rounded-2xl p-8 text-center">
+                <i class="fas fa-calendar-check text-3xl text-gray-700 mb-3 block"></i>
+                <p class="text-gray-500 text-sm">No hay días bloqueados próximamente</p>
+            </div>`;
+            return;
+        }
+        container.innerHTML = proximos.map(fecha => {
+            const motivo = _motivoDia(solicitudes, fecha);
+            const d = new Date(fecha + 'T12:00:00');
+            const fmt = d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            return `<div class="card-premium rounded-xl p-4 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-lock text-red-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold capitalize text-sm">${fmt}</p>
+                        <p class="text-gray-400 text-xs mt-0.5">${motivo}</p>
+                    </div>
+                </div>
+                <button onclick="reabrirDia('${fecha}')"
+                    class="flex-shrink-0 px-3 py-2 text-green-400 border border-green-500/30 hover:border-green-500/60 hover:bg-green-500/10 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                    <i class="fas fa-lock-open"></i>Reabrir
+                </button>
+            </div>`;
+        }).join('');
+    }
+
+    function _motivoDia(solicitudes, fecha) {
+        const entradas = solicitudes.filter(s =>
+            String(s.Fecha || '').substring(0, 10) === fecha && s.Nombre === '__DIA_LIBRE__'
+        );
+        if (entradas.length) {
+            const u = entradas[entradas.length - 1];
+            return u['Tipo de corte'] || u.tipoCorte || 'Día libre';
+        }
+        try {
+            const local = JSON.parse(localStorage.getItem('legrinDiasLibres') || '{}');
+            return local[fecha]?.motivo || 'Día libre';
+        } catch { return 'Día libre'; }
+    }
+
+    async function cerrarDia() {
+        const fecha  = document.getElementById('dia-libre-fecha').value;
+        const motivo = document.getElementById('dia-libre-motivo').value;
+        if (!fecha) { mostrarNotificacion('Selecciona una fecha primero', 'error'); return; }
+        const btn = document.getElementById('btn-cerrar-dia');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+        const ok = await guardarEnGoogleSheets('__DIA_LIBRE__', '0', 'TODOS', fecha, '00:00', motivo);
+        try {
+            const local = JSON.parse(localStorage.getItem('legrinDiasLibres') || '{}');
+            local[fecha] = { motivo, estado: 'cerrado' };
+            localStorage.setItem('legrinDiasLibres', JSON.stringify(local));
+        } catch {}
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-lock mr-2"></i>Marcar Cerrado';
+        document.getElementById('dia-libre-fecha').value = '';
+        mostrarNotificacion(ok ? '✅ Día marcado como cerrado' : '✅ Día marcado (solo este dispositivo — revisa tu Apps Script)', ok ? 'success' : 'info');
+        await actualizarTodo();
+    }
+
+    async function reabrirDia(fecha) {
+        await guardarEnGoogleSheets('__DIA_ABIERTO__', '0', 'TODOS', fecha, '00:00', 'REABRIR');
+        try {
+            const local = JSON.parse(localStorage.getItem('legrinDiasLibres') || '{}');
+            if (local[fecha]) local[fecha].estado = 'abierto';
+            localStorage.setItem('legrinDiasLibres', JSON.stringify(local));
+        } catch {}
+        mostrarNotificacion('✅ Día reabierto correctamente', 'success');
+        await actualizarTodo();
+    }
+
+    // ─── Registro Mensual ─────────────────────────────────────────────────────
+
+    function renderizarRegistroMensual(solicitudes) {
+        const reales = solicitudes.filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__');
+        const porMes = {};
+        reales.forEach(s => {
+            const fecha = String(s.Fecha || '').substring(0, 10);
+            if (fecha.length < 7) return;
+            const mes = fecha.substring(0, 7);
+            if (!porMes[mes]) porMes[mes] = [];
+            porMes[mes].push(s);
+        });
+
+        const meses = Object.keys(porMes).sort().reverse();
+        const container = document.getElementById('registro-mensual-container');
+        if (!container) return;
+
+        if (!meses.length) {
+            container.innerHTML = `<div class="card-premium rounded-2xl p-8 text-center">
+                <i class="fas fa-chart-bar text-3xl text-gray-700 mb-3 block"></i>
+                <p class="text-gray-500 text-sm">No hay registros disponibles</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = meses.map((mes, idx) => {
+            const citas = porMes[mes];
+            const aprobadas = citas.filter(s => {
+                const est = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || '';
+                return est === 'Aprobada' || est === 'Aprobado';
+            });
+
+            const [anio, mesNum] = mes.split('-');
+            const nombreMes = new Date(parseInt(anio), parseInt(mesNum) - 1, 1)
+                .toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+
+            const porBarbero = {};
+            aprobadas.forEach(s => { const b = s.Barbero || 'Desconocido'; porBarbero[b] = (porBarbero[b] || 0) + 1; });
+
+            const barberoStats = Object.entries(porBarbero).map(([b, n]) =>
+                `<div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">
+                    <p class="text-xl font-bold text-amber-400">${n}</p>
+                    <p class="text-xs text-gray-400 mt-1 truncate">${b.split(' ')[0]}</p>
+                </div>`
+            ).join('');
+
+            const lista = aprobadas
+                .sort((a, b) => String(a.Fecha).localeCompare(String(b.Fecha)))
+                .map(s => {
+                    const horaStr = parsearHora(s.Hora);
+                    const tipo    = s['Tipo de corte'] || '';
+                    const fecha   = String(s.Fecha || '').substring(0, 10);
+                    return `<div class="flex items-center justify-between py-2.5 border-b border-gray-800/60 text-sm last:border-0">
+                        <div class="min-w-0">
+                            <p class="font-medium truncate">${s.Nombre || ''}</p>
+                            <p class="text-gray-500 text-xs truncate">${s.Barbero || ''}${tipo ? ' · ' + tipo : ''}</p>
+                        </div>
+                        <div class="text-right text-gray-400 text-xs flex-shrink-0 ml-4">
+                            <p>${fecha}</p>
+                            <p>${formatearHora12h(horaStr)}</p>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            const abierto = idx === 0;
+            return `<div class="card-premium rounded-2xl overflow-hidden">
+                <button onclick="toggleMes(this)"
+                    class="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-white/5 transition">
+                    <div>
+                        <p class="font-bold text-lg capitalize">${nombreMes}</p>
+                        <p class="text-gray-400 text-sm mt-0.5">
+                            <span class="text-amber-400 font-semibold">${aprobadas.length}</span> cortes completados
+                            <span class="text-gray-600 mx-1">·</span>${citas.length} citas totales
+                        </p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-500 flex-shrink-0 ml-4 transition-transform duration-200${abierto ? ' rotate-180' : ''}" style="transform:${abierto ? 'rotate(180deg)' : ''}"></i>
+                </button>
+                <div class="${abierto ? '' : 'hidden'} px-5 sm:px-6 pb-6">
+                    ${aprobadas.length
+                        ? `<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">${barberoStats}</div><div>${lista}</div>`
+                        : `<p class="text-gray-500 text-sm text-center py-4">No hay cortes completados este mes</p>`}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function toggleMes(btn) {
+        const content = btn.nextElementSibling;
+        const icon    = btn.querySelector('i.fa-chevron-down');
+        const hidden  = content.classList.toggle('hidden');
+        if (icon) icon.style.transform = hidden ? '' : 'rotate(180deg)';
+    }
 </script>
 </body>
 </html>
