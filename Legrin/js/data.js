@@ -16,7 +16,7 @@ const HORARIOS_DIA = {
     5: { inicio:  7 * 60,           fin: 19 * 60 + 30 }, // Viernes:    7:00 - 19:30
     6: { inicio:  7 * 60,           fin: 19 * 60 + 30 }, // Sábado:     7:00 - 19:30
 };
-const DURACION_CORTE = 30;
+const DURACION_CORTE = 45;
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIepuA4Uwpwm46_-ACkX0dr8WUryjrL71bwBslMGafEYR4hDPuPr8pkEJBOFFDbGU_6g/exec';
 
