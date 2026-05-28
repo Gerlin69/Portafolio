@@ -18,6 +18,13 @@ function validarDisponibilidad(barbero, fecha, hora) {
     return !obtenerReservas().find(r => r.barbero === barbero && r.fecha === fecha && r.hora === hora);
 }
 
+function formatearHora12h(hora24) {
+    const [h, m] = hora24.split(':').map(Number);
+    const periodo = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${String(m).padStart(2, '0')} ${periodo}`;
+}
+
 function parsearHora(val) {
     const str = String(val || '');
     if (/^\d{1,2}:\d{2}$/.test(str)) return str.padStart(5, '0');
@@ -129,7 +136,7 @@ async function actualizarHorarios() {
     );
 
     const ahora = new Date();
-    const hoy   = ahora.toISOString().split('T')[0];
+    const hoy   = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
     const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
 
     container.innerHTML = horarios.map(h => {
@@ -137,7 +144,7 @@ async function actualizarHorarios() {
         const pasada    = fecha === hoy && (hh * 60 + mm) <= minutosAhora;
         const disponible = !pasada && !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
         const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
-        return `<button type="button" class="${clase}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${h}</button>`;
+        return `<button type="button" class="${clase}" data-hora="${h}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${formatearHora12h(h)}</button>`;
     }).join('');
 }
 
@@ -145,7 +152,7 @@ function seleccionarHora(hora) {
     document.getElementById('hora').value = hora;
     document.querySelectorAll('.horario-disponible, .horario-ocupado').forEach(btn => {
         btn.classList.remove('horario-seleccionado');
-        if (btn.textContent === hora) btn.classList.add('horario-seleccionado');
+        if (btn.dataset.hora === hora) btn.classList.add('horario-seleccionado');
     });
 }
 
@@ -162,7 +169,8 @@ async function realizarReserva() {
         return;
     }
 
-    const hoy = new Date().toISOString().split('T')[0];
+    const _hoyDate = new Date();
+    const hoy = `${_hoyDate.getFullYear()}-${String(_hoyDate.getMonth()+1).padStart(2,'0')}-${String(_hoyDate.getDate()).padStart(2,'0')}`;
     if (fecha < hoy) {
         mostrarNotificacion('❌ No puedes reservar en fechas anteriores a hoy', 'error');
         return;
