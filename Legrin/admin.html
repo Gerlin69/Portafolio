@@ -88,6 +88,16 @@
             <div id="recordatorios-lista"></div>
         </section>
 
+        <!-- ─── NO REALIZADOS ──────────────────────────────────────────────────── -->
+        <section id="seccion-no-realizados" class="mb-10 sm:mb-14" style="display:none">
+            <div class="mb-5 sm:mb-6">
+                <p class="text-red-400 text-xs font-bold tracking-widest uppercase mb-1">Ausencias</p>
+                <h2 class="text-2xl sm:text-3xl font-bold">No Realizados</h2>
+                <p class="text-gray-400 text-sm mt-1">Citas que no se llevaron a cabo</p>
+            </div>
+            <div id="no-realizados-lista"></div>
+        </section>
+
         <!-- ─── DÍAS NO LABORABLES ────────────────────────────────────────────── -->
         <section class="mb-10 sm:mb-14">
             <div class="mb-5 sm:mb-6">
@@ -163,11 +173,43 @@
     </div>
 </div>
 
+<!-- ─── MODAL NO SE REALIZÓ ───────────────────────────────────────────────────── -->
+<div id="modal-no-realizado" class="fixed inset-0 bg-black/80 z-50 items-center justify-center p-4"
+    style="display:none; backdrop-filter: blur(8px);">
+    <div class="card-premium rounded-2xl p-8 w-full max-w-sm" style="animation: scaleIn 0.25s ease;">
+        <h3 class="text-lg font-bold mb-1">¿Por qué no se realizó?</h3>
+        <p id="modal-no-realizado-info" class="text-gray-400 text-sm mb-6"></p>
+
+        <label class="text-gray-400 text-sm mb-2 block">Motivo</label>
+        <select id="modal-no-realizado-motivo" class="input-premium w-full mb-3" onchange="toggleMotivoOtro(this)">
+            <option value="Cliente no asistió">Cliente no asistió</option>
+            <option value="Cliente canceló">Cliente canceló</option>
+            <option value="Problema del barbero">Problema del barbero</option>
+            <option value="Otro">Otro...</option>
+        </select>
+        <input type="text" id="modal-no-realizado-otro" placeholder="Especifica el motivo..."
+            class="input-premium w-full mb-6" style="display:none">
+
+        <div class="flex gap-3">
+            <button onclick="cerrarModalNoRealizado()"
+                class="flex-1 py-3 border border-gray-700 rounded-xl text-gray-300 hover:border-gray-500 transition font-semibold text-sm">
+                Cancelar
+            </button>
+            <button onclick="confirmarNoRealizado()"
+                class="flex-1 py-3 bg-red-500/10 border border-red-500/40 hover:border-red-500/70 text-red-400 rounded-xl transition font-semibold text-sm">
+                <i class="fas fa-times mr-1.5"></i>Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="js/data.js"></script>
 <script src="js/reservas.js"></script>
 <script src="js/barberos.js"></script>
 <script>
     let _barberoModal = null;
+    let _solicitudesActuales = [];
+    let _idxNoRealizado = null;
 
     // ─── Autenticación ────────────────────────────────────────────────────────
     function verificarPin() {
@@ -207,6 +249,7 @@
         const solicitudes = await obtenerSolicitudesGoogleSheets();
         renderizarCardsBarberos(solicitudes);
         renderizarRecordatorios(solicitudes);
+        renderizarNoRealizados();
         renderizarDiasNoLaborables(solicitudes);
         renderizarRegistroMensual(solicitudes);
         _actualizarTimestamp();
@@ -318,12 +361,23 @@
         const manana = `${mananaDate.getFullYear()}-${String(mananaDate.getMonth()+1).padStart(2,'0')}-${String(mananaDate.getDate()).padStart(2,'0')}`;
         const reales = solicitudes.filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__');
 
-        const citasHoy    = reales.filter(r => String(r.Fecha || '').substring(0, 10) === hoy)
-            .sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
-        const citasManana = reales.filter(r => String(r.Fecha || '').substring(0, 10) === manana)
-            .sort((a, b) => String(a.Hora).localeCompare(String(b.Hora)));
+        _solicitudesActuales = reales;
+        const cortes = obtenerEstadoCortes();
 
-        function renderFila(r, isToday) {
+        const citasHoy = reales
+            .map((r, idx) => ({ r, idx }))
+            .filter(({ r }) =>
+                String(r.Fecha || '').substring(0, 10) === hoy &&
+                cortes[_claveCorte(r)]?.estado !== 'No Realizado'
+            )
+            .sort((a, b) => String(a.r.Hora).localeCompare(String(b.r.Hora)));
+
+        const citasManana = reales
+            .map((r, idx) => ({ r, idx }))
+            .filter(({ r }) => String(r.Fecha || '').substring(0, 10) === manana)
+            .sort((a, b) => String(a.r.Hora).localeCompare(String(b.r.Hora)));
+
+        function renderFila({ r, idx }, isToday) {
             const config    = BARBEROS_CONFIG.find(b => b.nombre === r.Barbero);
             const tipoCorte = r['Tipo de corte'] || '';
             const waLink    = config ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(_mensajeBarbero(r, config, tipoCorte))}` : null;
@@ -337,23 +391,53 @@
                 urgente = !pasada && minsDiff <= 30;
                 timeLabel = pasada ? 'Pasada' : minsDiff + 'min';
             }
-            return `<div class="card-premium rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 sm:gap-4 ${urgente ? 'border-amber-500/30' : ''}">
-                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div class="text-center min-w-[48px] sm:min-w-[56px]">
-                        <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
-                        ${isToday ? `<p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${timeLabel}</p>` : ''}
+
+            const estadoCorte = cortes[_claveCorte(r)];
+            const yaRealizado = estadoCorte?.estado === 'Realizado';
+
+            let botonesRow = '';
+            if (isToday) {
+                if (yaRealizado) {
+                    botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-green-400 bg-green-500/10 rounded-lg px-3 py-1.5">
+                            <i class="fas fa-check"></i>Realizado
+                        </span>
+                        <button onclick="deshacerMarcarCorte(${idx})" class="text-xs text-gray-600 hover:text-gray-400 transition underline">deshacer</button>
+                    </div>`;
+                } else {
+                    botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 flex gap-2">
+                        <button onclick="marcarCorteRealizado(${idx})"
+                            class="flex-1 py-2 bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg text-xs font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition">
+                            <i class="fas fa-check mr-1"></i>Realizado
+                        </button>
+                        <button onclick="abrirModalNoRealizado(${idx})"
+                            class="flex-1 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs font-semibold hover:border-red-500/60 hover:bg-red-500/20 transition">
+                            <i class="fas fa-times mr-1"></i>No se realizó
+                        </button>
+                    </div>`;
+                }
+            }
+
+            return `<div class="card-premium rounded-xl p-3 sm:p-4 ${urgente ? 'border-amber-500/30' : ''}">
+                <div class="flex items-center justify-between gap-3 sm:gap-4">
+                    <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                        <div class="text-center min-w-[48px] sm:min-w-[56px]">
+                            <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
+                            ${isToday ? `<p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${timeLabel}</p>` : ''}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold truncate">${r.Nombre || ''}</p>
+                            <p class="text-gray-400 text-sm truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
+                        </div>
                     </div>
-                    <div class="min-w-0">
-                        <p class="font-semibold truncate">${r.Nombre || ''}</p>
-                        <p class="text-gray-400 text-sm truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
-                    </div>
+                    ${waLink
+                        ? `<a href="${waLink}" target="_blank"
+                            class="flex-shrink-0 px-3 py-2.5 sm:px-4 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition flex items-center gap-2">
+                            <i class="fab fa-whatsapp"></i><span class="hidden sm:inline">Recordar</span>
+                        </a>`
+                        : `<span class="text-gray-600 text-xs flex-shrink-0">Sin número</span>`}
                 </div>
-                ${waLink
-                    ? `<a href="${waLink}" target="_blank"
-                        class="flex-shrink-0 px-3 py-2.5 sm:px-4 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition flex items-center gap-2">
-                        <i class="fab fa-whatsapp"></i><span class="hidden sm:inline">Recordar</span>
-                    </a>`
-                    : `<span class="text-gray-600 text-xs flex-shrink-0">Sin número</span>`}
+                ${botonesRow}
             </div>`;
         }
 
@@ -362,7 +446,7 @@
                 <i class="fas fa-calendar-check text-3xl text-gray-700 mb-3 block"></i>
                 <p class="text-gray-500 text-sm">Sin citas</p>
             </div>`;
-            return `<div class="space-y-3">${citas.map(r => renderFila(r, isToday)).join('')}</div>`;
+            return `<div class="space-y-3">${citas.map(item => renderFila(item, isToday)).join('')}</div>`;
         }
 
         lista.innerHTML = `
@@ -393,7 +477,144 @@
         return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita ${cuando}:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${horaStr}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
     }
 
-    // ─── Modal ────────────────────────────────────────────────────────────────
+    // ─── Estado de Cortes (Realizado / No Realizado) ──────────────────────────
+    function obtenerEstadoCortes() {
+        try { return JSON.parse(localStorage.getItem('legrinEstadoCortes') || '{}'); } catch { return {}; }
+    }
+
+    function guardarEstadoCortes(obj) {
+        localStorage.setItem('legrinEstadoCortes', JSON.stringify(obj));
+    }
+
+    function _claveCorte(r) {
+        return [r.Barbero || '', String(r.Fecha || '').substring(0, 10), parsearHora(r.Hora), r.Nombre || ''].join('|');
+    }
+
+    function marcarCorteRealizado(idx) {
+        const r = _solicitudesActuales[idx];
+        if (!r) return;
+        const cortes = obtenerEstadoCortes();
+        cortes[_claveCorte(r)] = { estado: 'Realizado', motivo: '', timestamp: new Date().toISOString() };
+        guardarEstadoCortes(cortes);
+        _sincronizarEstadoCorte(r, 'Realizado', '');
+        actualizarTodo();
+    }
+
+    function abrirModalNoRealizado(idx) {
+        _idxNoRealizado = idx;
+        const r = _solicitudesActuales[idx];
+        if (!r) return;
+        document.getElementById('modal-no-realizado-info').textContent =
+            `${r.Nombre || ''} · ${parsearHora(r.Hora)} · ${r.Barbero || ''}`;
+        document.getElementById('modal-no-realizado-motivo').value = 'Cliente no asistió';
+        const otroInput = document.getElementById('modal-no-realizado-otro');
+        otroInput.style.display = 'none';
+        otroInput.value = '';
+        document.getElementById('modal-no-realizado').style.display = 'flex';
+    }
+
+    function cerrarModalNoRealizado() {
+        document.getElementById('modal-no-realizado').style.display = 'none';
+        _idxNoRealizado = null;
+    }
+
+    function toggleMotivoOtro(sel) {
+        document.getElementById('modal-no-realizado-otro').style.display =
+            sel.value === 'Otro' ? 'block' : 'none';
+    }
+
+    function confirmarNoRealizado() {
+        if (_idxNoRealizado === null) return;
+        const r = _solicitudesActuales[_idxNoRealizado];
+        if (!r) return;
+        const selMotivo = document.getElementById('modal-no-realizado-motivo').value;
+        const motivo = selMotivo === 'Otro'
+            ? (document.getElementById('modal-no-realizado-otro').value.trim() || 'Sin especificar')
+            : selMotivo;
+        const cortes = obtenerEstadoCortes();
+        cortes[_claveCorte(r)] = { estado: 'No Realizado', motivo, timestamp: new Date().toISOString() };
+        guardarEstadoCortes(cortes);
+        _sincronizarEstadoCorte(r, 'No Realizado', motivo);
+        cerrarModalNoRealizado();
+        actualizarTodo();
+    }
+
+    async function _sincronizarEstadoCorte(r, estado, motivo) {
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    action: 'actualizarEstadoCorte',
+                    barbero: r.Barbero,
+                    fecha: String(r.Fecha || '').substring(0, 10),
+                    hora: parsearHora(r.Hora),
+                    nombre: r.Nombre,
+                    estado,
+                    motivo
+                })
+            });
+        } catch {}
+    }
+
+    function deshacerMarcarCorte(idx) {
+        const r = _solicitudesActuales[idx];
+        if (!r) return;
+        const cortes = obtenerEstadoCortes();
+        delete cortes[_claveCorte(r)];
+        guardarEstadoCortes(cortes);
+        actualizarTodo();
+    }
+
+    function renderizarNoRealizados() {
+        const seccion = document.getElementById('seccion-no-realizados');
+        const lista   = document.getElementById('no-realizados-lista');
+        if (!seccion || !lista) return;
+
+        const cortes = obtenerEstadoCortes();
+        const noRealizados = _solicitudesActuales
+            .map((r, idx) => ({ r, idx, info: cortes[_claveCorte(r)] }))
+            .filter(({ info }) => info?.estado === 'No Realizado')
+            .sort((a, b) =>
+                String(b.r.Fecha).localeCompare(String(a.r.Fecha)) ||
+                String(b.r.Hora).localeCompare(String(a.r.Hora))
+            );
+
+        if (!noRealizados.length) {
+            seccion.style.display = 'none';
+            return;
+        }
+
+        seccion.style.display = '';
+        lista.innerHTML = `<div class="space-y-3">${noRealizados.map(({ r, idx, info }) => {
+            const horaStr   = parsearHora(r.Hora);
+            const tipoCorte = r['Tipo de corte'] || '';
+            const fecha     = String(r.Fecha || '').substring(0, 10);
+            return `<div class="card-premium rounded-xl p-3 sm:p-4 border border-red-500/20">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user-slash text-red-400 text-sm"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold truncate">${r.Nombre || ''}</p>
+                            <p class="text-gray-400 text-xs truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
+                            <p class="text-gray-500 text-xs">${fecha} · ${horaStr}</p>
+                            <p class="text-red-400 text-xs mt-1 flex items-center gap-1">
+                                <i class="fas fa-times-circle"></i>${info.motivo || 'Sin motivo'}
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="deshacerMarcarCorte(${idx})"
+                        class="flex-shrink-0 px-3 py-2 text-gray-400 border border-gray-700 hover:border-gray-500 rounded-lg text-xs font-semibold transition whitespace-nowrap">
+                        <i class="fas fa-undo mr-1"></i>Deshacer
+                    </button>
+                </div>
+            </div>`;
+        }).join('')}</div>`;
+    }
+
+    // ─── Modal Salir ──────────────────────────────────────────────────────────
     function abrirModalSalida(key) {
         _barberoModal = key;
         const config = BARBEROS_CONFIG.find(b => b.key === key);
@@ -423,6 +644,10 @@
 
     document.getElementById('modal-salida').addEventListener('click', function(e) {
         if (e.target === this) cerrarModal();
+    });
+
+    document.getElementById('modal-no-realizado').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalNoRealizado();
     });
 
     // ─── Días No Laborables ───────────────────────────────────────────────────
@@ -512,6 +737,7 @@
 
     function renderizarRegistroMensual(solicitudes) {
         const reales = solicitudes.filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__');
+        const cortesEstado = obtenerEstadoCortes();
         const porMes = {};
         reales.forEach(s => {
             const fecha = String(s.Fecha || '').substring(0, 10);
@@ -539,6 +765,10 @@
                 const est = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || '';
                 return est === 'Aprobada' || est === 'Aprobado';
             });
+            const noRealizadas = citas
+                .map(s => ({ s, info: cortesEstado[_claveCorte(s)] }))
+                .filter(({ info }) => info?.estado === 'No Realizado')
+                .sort((a, b) => String(a.s.Fecha).localeCompare(String(b.s.Fecha)));
 
             const [anio, mesNum] = mes.split('-');
             const nombreMes = new Date(parseInt(anio), parseInt(mesNum) - 1, 1)
@@ -554,7 +784,7 @@
                 </div>`
             ).join('');
 
-            const lista = aprobadas
+            const listaAprobadas = aprobadas
                 .sort((a, b) => String(a.Fecha).localeCompare(String(b.Fecha)))
                 .map(s => {
                     const horaStr = parsearHora(s.Hora);
@@ -572,6 +802,33 @@
                     </div>`;
                 }).join('');
 
+            const listaNoRealizadas = noRealizadas.map(({ s, info }) => {
+                const horaStr = parsearHora(s.Hora);
+                const tipo    = s['Tipo de corte'] || '';
+                const fecha   = String(s.Fecha || '').substring(0, 10);
+                return `<div class="flex items-center justify-between py-2.5 border-b border-red-900/20 text-sm last:border-0">
+                    <div class="min-w-0">
+                        <p class="font-medium truncate text-gray-400">${s.Nombre || ''}</p>
+                        <p class="text-gray-600 text-xs truncate">${s.Barbero || ''}${tipo ? ' · ' + tipo : ''}</p>
+                        <p class="text-red-400/70 text-xs mt-0.5 flex items-center gap-1">
+                            <i class="fas fa-times-circle"></i>${info.motivo || 'Sin motivo'}
+                        </p>
+                    </div>
+                    <div class="text-right text-gray-500 text-xs flex-shrink-0 ml-4">
+                        <p>${fecha}</p>
+                        <p>${formatearHora12h(horaStr)}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            const seccionNoRealizadas = noRealizadas.length ? `
+                <div class="mt-5 pt-4 border-t border-gray-800/60">
+                    <p class="text-xs text-red-400/70 font-semibold uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <i class="fas fa-user-slash"></i>No realizados &mdash; ${noRealizadas.length}
+                    </p>
+                    <div>${listaNoRealizadas}</div>
+                </div>` : '';
+
             const abierto = idx === 0;
             return `<div class="card-premium rounded-2xl overflow-hidden">
                 <button onclick="toggleMes(this)"
@@ -579,7 +836,8 @@
                     <div>
                         <p class="font-bold text-lg capitalize">${nombreMes}</p>
                         <p class="text-gray-400 text-sm mt-0.5">
-                            <span class="text-amber-400 font-semibold">${aprobadas.length}</span> cortes completados
+                            <span class="text-amber-400 font-semibold">${aprobadas.length}</span> cortes realizados
+                            ${noRealizadas.length ? `<span class="text-gray-600 mx-1">·</span><span class="text-red-400/80 font-medium">${noRealizadas.length} no realizados</span>` : ''}
                             <span class="text-gray-600 mx-1">·</span>${citas.length} citas totales
                         </p>
                     </div>
@@ -587,8 +845,9 @@
                 </button>
                 <div class="${abierto ? '' : 'hidden'} px-5 sm:px-6 pb-6">
                     ${aprobadas.length
-                        ? `<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">${barberoStats}</div><div>${lista}</div>`
+                        ? `<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">${barberoStats}</div><div>${listaAprobadas}</div>`
                         : `<p class="text-gray-500 text-sm text-center py-4">No hay cortes completados este mes</p>`}
+                    ${seccionNoRealizadas}
                 </div>
             </div>`;
         }).join('');
