@@ -13,7 +13,9 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\USUARIO\\\\Documents\\\\GitHub\\\\Portafolio\\\\Legrin\" -Recurse -File)",
       "Bash(Select-Object FullName)",
-      "Bash(xargs grep -l \"APPS_SCRIPT\\\\|Google Sheets\\\\|nuevaReserva\\\\|updateBarberStatus\")"
+      "Bash(xargs grep -l \"APPS_SCRIPT\\\\|Google Sheets\\\\|nuevaReserva\\\\|updateBarberStatus\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\USUARIO\\\\Documents\\\\GitHub\\\\Portafolio\\\\Legrin\\\\admin.html\")",
+      "Bash(git rm *)"
     ]
   }
 }
