@@ -169,8 +169,9 @@ async function actualizarHorarios() {
 
     container.innerHTML = horarios.map(h => {
         const [hh, mm] = h.split(':').map(Number);
-        const pasada    = fecha === hoy && (hh * 60 + mm) <= minutosAhora;
-        const disponible = !pasada && !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
+        const pasada     = fecha === hoy && (hh * 60 + mm) <= minutosAhora;
+        const enAlmuerzo = (hh * 60 + mm) >= ALMUERZO.inicio && (hh * 60 + mm) < ALMUERZO.fin;
+        const disponible = !pasada && !enAlmuerzo && !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
         const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
         return `<button type="button" class="${clase}" data-hora="${h}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${formatearHora12h(h)}</button>`;
     }).join('');
@@ -219,6 +220,11 @@ async function realizarReserva() {
             mostrarNotificacion('❌ Este horario ya pasó. Por favor elige uno futuro.', 'error');
             return;
         }
+    }
+    const [_hh, _mm] = hora.split(':').map(Number);
+    if ((_hh * 60 + _mm) >= ALMUERZO.inicio && (_hh * 60 + _mm) < ALMUERZO.fin) {
+        mostrarNotificacion('❌ Los barberos almuerzan de 1:00 PM a 2:00 PM. Por favor elige otro horario.', 'error');
+        return;
     }
 
     const btn = document.getElementById('btn-reservar');
