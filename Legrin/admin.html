@@ -210,6 +210,7 @@
     let _barberoModal = null;
     let _solicitudesActuales = [];
     let _idxNoRealizado = null;
+    let _cortesActuales = {};
 
     // ─── Autenticación ────────────────────────────────────────────────────────
     function verificarPin() {
@@ -370,7 +371,19 @@
             return true;
         });
         _solicitudesActuales = realesSinDup;
-        const cortes = obtenerEstadoCortes();
+        // Mezclar localStorage con el Estado del Sheet para sincronización entre dispositivos
+        const cortesLocal = obtenerEstadoCortes();
+        _cortesActuales = { ...cortesLocal };
+        realesSinDup.forEach(r => {
+            const k = _claveCorte(r);
+            if (!_cortesActuales[k]) {
+                const est = r['Estado (Pendiente/Aprobado/Rechazado)'] || r.Estado || 'Pendiente';
+                const mot = r['Motivo rechazo'] || '';
+                if (est === 'Aprobado')  _cortesActuales[k] = { estado: 'Realizado',    motivo: '' };
+                else if (est === 'Rechazado') _cortesActuales[k] = { estado: 'No Realizado', motivo: mot };
+            }
+        });
+        const cortes = _cortesActuales;
 
         const citasHoy = reales
             .map((r, idx) => ({ r, idx }))
@@ -580,7 +593,7 @@
         const lista   = document.getElementById('no-realizados-lista');
         if (!seccion || !lista) return;
 
-        const cortes = obtenerEstadoCortes();
+        const cortes = _cortesActuales;
         const noRealizados = _solicitudesActuales
             .map((r, idx) => ({ r, idx, info: cortes[_claveCorte(r)] }))
             .filter(({ info }) => info?.estado === 'No Realizado')
@@ -749,7 +762,7 @@
         const reales = solicitudes
             .filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__')
             .filter(s => { const k = _claveCorte(s); if (_vis.has(k)) return false; _vis.add(k); return true; });
-        const cortesEstado = obtenerEstadoCortes();
+        const cortesEstado = _cortesActuales;
         const porMes = {};
         reales.forEach(s => {
             const fecha = String(s.Fecha || '').substring(0, 10);
