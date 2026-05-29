@@ -276,11 +276,11 @@
 
             let totalHoy, proxCita;
             if (solicitudes) {
+                const _vc = new Set();
                 const citasHoy = solicitudes.filter(s => {
                     const estadoSol = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
-                    return String(s.Fecha || '').substring(0, 10) === hoy
-                        && s.Barbero === nombre
-                        && estadoSol !== 'Rechazada';
+                    if (String(s.Fecha || '').substring(0, 10) !== hoy || s.Barbero !== nombre || estadoSol === 'Rechazada') return false;
+                    const k = _claveCorte(s); if (_vc.has(k)) return false; _vc.add(k); return true;
                 });
                 totalHoy = citasHoy.length;
                 const proxSol = citasHoy
@@ -361,7 +361,15 @@
         const manana = `${mananaDate.getFullYear()}-${String(mananaDate.getMonth()+1).padStart(2,'0')}-${String(mananaDate.getDate()).padStart(2,'0')}`;
         const reales = solicitudes.filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__');
 
-        _solicitudesActuales = reales;
+        // Deduplicar por clave única (barbero+fecha+hora+nombre)
+        const _vistas = new Set();
+        const realesSinDup = reales.filter(r => {
+            const k = _claveCorte(r);
+            if (_vistas.has(k)) return false;
+            _vistas.add(k);
+            return true;
+        });
+        _solicitudesActuales = realesSinDup;
         const cortes = obtenerEstadoCortes();
 
         const citasHoy = reales
@@ -393,35 +401,35 @@
             }
 
             const estadoCorte = cortes[_claveCorte(r)];
-            const yaRealizado = estadoCorte?.estado === 'Realizado';
+            const yaRealizado  = estadoCorte?.estado === 'Realizado';
 
-            let botonesRow = '';
-            if (isToday) {
-                if (yaRealizado) {
-                    botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-green-400 bg-green-500/10 rounded-lg px-3 py-1.5">
-                            <i class="fas fa-check"></i>Realizado
-                        </span>
-                        <button onclick="deshacerMarcarCorte(${idx})" class="text-xs text-gray-600 hover:text-gray-400 transition underline">deshacer</button>
-                    </div>`;
-                } else {
-                    botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 flex gap-2">
-                        <button onclick="marcarCorteRealizado(${idx})"
-                            class="flex-1 py-2 bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg text-xs font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition">
-                            <i class="fas fa-check mr-1"></i>Realizado
-                        </button>
-                        <button onclick="abrirModalNoRealizado(${idx})"
-                            class="flex-1 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-xs font-semibold hover:border-red-500/60 hover:bg-red-500/20 transition">
-                            <i class="fas fa-times mr-1"></i>No se realizó
-                        </button>
-                    </div>`;
-                }
+            let botonesRow;
+            if (yaRealizado) {
+                botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-green-400 bg-green-500/10 rounded-lg px-3 py-2">
+                        <i class="fas fa-check"></i>Realizado
+                    </span>
+                    <button onclick="deshacerMarcarCorte(${idx})" class="text-xs text-gray-600 hover:text-gray-400 transition underline py-2 px-1">deshacer</button>
+                </div>`;
+            } else {
+                botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 grid grid-cols-2 gap-2">
+                    <button onclick="marcarCorteRealizado(${idx})"
+                        style="min-height:44px"
+                        class="w-full bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg text-sm font-semibold active:bg-green-500/30 transition flex items-center justify-center gap-1.5">
+                        <i class="fas fa-check"></i>Realizado
+                    </button>
+                    <button onclick="abrirModalNoRealizado(${idx})"
+                        style="min-height:44px"
+                        class="w-full bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm font-semibold active:bg-red-500/30 transition flex items-center justify-center gap-1.5">
+                        <i class="fas fa-times"></i>No se realizó
+                    </button>
+                </div>`;
             }
 
-            return `<div class="card-premium rounded-xl p-3 sm:p-4 ${urgente ? 'border-amber-500/30' : ''}">
-                <div class="flex items-center justify-between gap-3 sm:gap-4">
-                    <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-                        <div class="text-center min-w-[48px] sm:min-w-[56px]">
+            return `<div class="rounded-xl p-3 sm:p-4 border ${urgente ? 'border-amber-500/30 bg-amber-900/5' : 'border-gray-800/60 bg-gray-900/40'}">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="text-center min-w-[44px]">
                             <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
                             ${isToday ? `<p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${timeLabel}</p>` : ''}
                         </div>
@@ -432,8 +440,8 @@
                     </div>
                     ${waLink
                         ? `<a href="${waLink}" target="_blank"
-                            class="flex-shrink-0 px-3 py-2.5 sm:px-4 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-semibold hover:border-green-500/60 hover:bg-green-500/20 transition flex items-center gap-2">
-                            <i class="fab fa-whatsapp"></i><span class="hidden sm:inline">Recordar</span>
+                            class="flex-shrink-0 w-10 h-10 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl font-semibold active:bg-green-500/20 transition flex items-center justify-center">
+                            <i class="fab fa-whatsapp text-base"></i>
                         </a>`
                         : `<span class="text-gray-600 text-xs flex-shrink-0">Sin número</span>`}
                 </div>
@@ -736,7 +744,10 @@
     // ─── Registro Mensual ─────────────────────────────────────────────────────
 
     function renderizarRegistroMensual(solicitudes) {
-        const reales = solicitudes.filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__');
+        const _vis = new Set();
+        const reales = solicitudes
+            .filter(s => s.Nombre !== '__DIA_LIBRE__' && s.Nombre !== '__DIA_ABIERTO__')
+            .filter(s => { const k = _claveCorte(s); if (_vis.has(k)) return false; _vis.add(k); return true; });
         const cortesEstado = obtenerEstadoCortes();
         const porMes = {};
         reales.forEach(s => {

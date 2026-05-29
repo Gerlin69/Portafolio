@@ -99,6 +99,13 @@ body {
     box-shadow: 0 20px 40px rgba(251, 191, 36, 0.1);
 }
 
+@media (hover: none) {
+    .card-premium:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
 .nav-link {
     position: relative;
     transition: color 0.3s ease;
