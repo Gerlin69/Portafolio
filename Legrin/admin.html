@@ -331,7 +331,7 @@
                     <div class="flex justify-between text-gray-400">
                         <span>Próxima cita</span>
                         <span class="text-white font-medium text-right">${proxCita
-                            ? `${proxCita.hora} · ${proxCita.nombre}`
+                            ? `${formatearHora12h(proxCita.hora)} · ${proxCita.nombre}`
                             : '<span class="text-gray-600">—</span>'}</span>
                     </div>
                     <div class="flex justify-between text-gray-400">
@@ -433,7 +433,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="text-center min-w-[44px]">
-                            <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${horaStr}</p>
+                            <p class="font-bold text-lg ${urgente ? 'text-amber-400' : pasada ? 'text-gray-500' : 'text-white'}">${formatearHora12h(horaStr)}</p>
                             ${isToday ? `<p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${timeLabel}</p>` : ''}
                         </div>
                         <div class="min-w-0">
@@ -483,9 +483,9 @@
             const mins = Math.round((citaTime - new Date()) / 60000);
             cuando = `en ${mins} minutos`;
         } else {
-            cuando = `mañana a las ${horaStr}`;
+            cuando = `mañana a las ${formatearHora12h(horaStr)}`;
         }
-        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita ${cuando}:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${horaStr}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
+        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita ${cuando}:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${formatearHora12h(horaStr)}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
     }
 
     // ─── Estado de Cortes (Realizado / No Realizado) ──────────────────────────
@@ -516,7 +516,7 @@
         const r = _solicitudesActuales[idx];
         if (!r) return;
         document.getElementById('modal-no-realizado-info').textContent =
-            `${r.Nombre || ''} · ${parsearHora(r.Hora)} · ${r.Barbero || ''}`;
+            `${r.Nombre || ''} · ${formatearHora12h(parsearHora(r.Hora))} · ${r.Barbero || ''}`;
         document.getElementById('modal-no-realizado-motivo').value = 'Cliente no asistió';
         const otroInput = document.getElementById('modal-no-realizado-otro');
         otroInput.style.display = 'none';
@@ -608,7 +608,7 @@
                         <div class="min-w-0">
                             <p class="font-semibold truncate">${r.Nombre || ''}</p>
                             <p class="text-gray-400 text-xs truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
-                            <p class="text-gray-500 text-xs">${fecha} · ${horaStr}</p>
+                            <p class="text-gray-500 text-xs">${fecha} · ${formatearHora12h(horaStr)}</p>
                             <p class="text-red-400 text-xs mt-1 flex items-center gap-1">
                                 <i class="fas fa-times-circle"></i>${info.motivo || 'Sin motivo'}
                             </p>
