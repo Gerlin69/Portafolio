@@ -6,7 +6,7 @@
     <title>Legrin — Panel Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body class="bg-black text-white min-h-screen">
 
@@ -14,7 +14,7 @@
 <div id="auth-overlay" class="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
     <div class="card-premium rounded-2xl p-8 w-full max-w-sm">
         <div class="flex justify-center mb-6">
-            <img src="img/logo.png" alt="Legrin" class="h-16 w-auto">
+            <img src="../img/logo.png" alt="Legrin" class="h-16 w-auto">
         </div>
         <h2 class="text-xl font-bold text-center mb-1">Panel Administrativo</h2>
         <p class="text-gray-500 text-sm text-center mb-8">Ingresa el PIN para continuar</p>
@@ -38,7 +38,7 @@
         <div class="absolute inset-0 -z-10" style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);"></div>
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="img/logo.png" alt="Legrin" class="h-10 w-auto">
+                <img src="../img/logo.png" alt="Legrin" class="h-10 w-auto">
                 <span class="badge-premium">ADMIN</span>
             </div>
             <div class="flex items-center gap-2 sm:gap-4">
@@ -203,9 +203,9 @@
     </div>
 </div>
 
-<script src="js/data.js"></script>
-<script src="js/reservas.js"></script>
-<script src="js/barberos.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/reservas.js"></script>
+<script src="../js/barberos.js"></script>
 <script>
     let _barberoModal = null;
     let _solicitudesActuales = [];
@@ -498,7 +498,7 @@
         } else {
             cuando = `mañana a las ${formatearHora12h(horaStr)}`;
         }
-        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita ${cuando}:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${formatearHora12h(horaStr)}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/admin.html`;
+        return `⏰ RECORDATORIO — Legrin Barber 💈\n\n¡Hola ${apodo}!\n\nTienes una cita ${cuando}:\n\n👤 Cliente: ${reserva.Nombre}\n⏰ Hora: ${formatearHora12h(horaStr)}\n✂️ Servicio: ${tipoCorte || 'Corte'}\n\nPanel Admin: gerlin69.github.io/Portafolio/Legrin/Pages/admin.html`;
     }
 
     // ─── Estado de Cortes (Realizado / No Realizado) ──────────────────────────
