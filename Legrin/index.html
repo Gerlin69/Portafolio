@@ -803,6 +803,16 @@
     <script src="js/reservas.js"></script>
     <script src="js/barberos.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        (function() {
+            var hoy = new Date();
+            var min = hoy.getFullYear() + '-' +
+                String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+                String(hoy.getDate()).padStart(2, '0');
+            var fechaInput = document.getElementById('fecha');
+            if (fechaInput) fechaInput.min = min;
+        })();
+    </script>
 
 </body>
 </html>
