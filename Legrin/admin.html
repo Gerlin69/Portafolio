@@ -382,7 +382,10 @@
 
         const citasManana = reales
             .map((r, idx) => ({ r, idx }))
-            .filter(({ r }) => String(r.Fecha || '').substring(0, 10) === manana)
+            .filter(({ r }) =>
+                String(r.Fecha || '').substring(0, 10) === manana &&
+                cortes[_claveCorte(r)]?.estado !== 'No Realizado'
+            )
             .sort((a, b) => String(a.r.Hora).localeCompare(String(b.r.Hora)));
 
         function renderFila({ r, idx }, isToday) {
@@ -551,9 +554,10 @@
         try {
             const params = new URLSearchParams({
                 action: 'actualizarEstadoCorte',
+                id:     r.ID !== undefined ? String(r.ID) : '',
                 barbero: r.Barbero || '',
-                fecha: String(r.Fecha || '').substring(0, 10),
-                hora: parsearHora(r.Hora),
+                fecha:  String(r.Fecha || '').substring(0, 10),
+                hora:   parsearHora(r.Hora),
                 nombre: r.Nombre || '',
                 estado,
                 motivo: motivo || ''
