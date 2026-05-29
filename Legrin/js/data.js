@@ -17,7 +17,7 @@ const HORARIOS_DIA = {
     6: { inicio:  7 * 60,           fin: 19 * 60 + 30 }, // Sábado:     7:00 - 19:30
 };
 const DURACION_CORTE = 45;
-const ALMUERZO = { inicio: 13 * 60, fin: 14 * 60 }; // 1:00 PM - 2:00 PM
+const ALMUERZO = { inicio: 13 * 60, fin: 14 * 60, buffer: 5 }; // 1:00 PM - 2:00 PM, reinicia a las 2:05 PM
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIepuA4Uwpwm46_-ACkX0dr8WUryjrL71bwBslMGafEYR4hDPuPr8pkEJBOFFDbGU_6g/exec';
 

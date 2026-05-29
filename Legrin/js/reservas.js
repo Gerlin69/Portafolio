@@ -134,7 +134,12 @@ async function actualizarHorarios() {
     const { inicio, fin } = HORARIOS_DIA[diaSemana];
 
     const horarios = [];
-    for (let minutos = inicio; minutos < fin; minutos += DURACION_CORTE) {
+    for (let minutos = inicio; minutos < Math.min(ALMUERZO.inicio, fin); minutos += DURACION_CORTE) {
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        horarios.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
+    }
+    for (let minutos = ALMUERZO.fin + ALMUERZO.buffer; minutos < fin; minutos += DURACION_CORTE) {
         const h = Math.floor(minutos / 60);
         const m = minutos % 60;
         horarios.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
@@ -170,8 +175,7 @@ async function actualizarHorarios() {
     container.innerHTML = horarios.map(h => {
         const [hh, mm] = h.split(':').map(Number);
         const pasada     = fecha === hoy && (hh * 60 + mm) <= minutosAhora;
-        const enAlmuerzo = (hh * 60 + mm) >= ALMUERZO.inicio && (hh * 60 + mm) < ALMUERZO.fin;
-        const disponible = !pasada && !enAlmuerzo && !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
+        const disponible = !pasada && !horasOcupadas.has(h) && validarDisponibilidad(barbero, fecha, h);
         const clase = disponible ? 'horario-disponible hover:shadow-lg hover:shadow-green-500/30' : 'horario-ocupado';
         return `<button type="button" class="${clase}" data-hora="${h}" onclick="seleccionarHora('${h}')" ${!disponible ? 'disabled' : ''}>${formatearHora12h(h)}</button>`;
     }).join('');
