@@ -184,6 +184,16 @@ function seleccionarHora(hora) {
     });
 }
 
+// Refresca los slots cada minuto si hoy está seleccionado, para que los horarios pasados se deshabiliten
+setInterval(function() {
+    const fechaEl  = document.getElementById('fecha');
+    const barberoEl = document.getElementById('barbero');
+    if (!fechaEl || !barberoEl || !fechaEl.value || !barberoEl.value) return;
+    const ahora = new Date();
+    const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
+    if (fechaEl.value === hoy) actualizarHorarios();
+}, 60000);
+
 async function realizarReserva() {
     const nombre    = document.getElementById('nombre').value;
     const telefono  = document.getElementById('telefono').value;
@@ -202,6 +212,13 @@ async function realizarReserva() {
     if (fecha < hoy) {
         mostrarNotificacion('❌ No puedes reservar en fechas anteriores a hoy', 'error');
         return;
+    }
+    if (fecha === hoy) {
+        const [hh, mm] = hora.split(':').map(Number);
+        if ((hh * 60 + mm) <= (_hoyDate.getHours() * 60 + _hoyDate.getMinutes())) {
+            mostrarNotificacion('❌ Este horario ya pasó. Por favor elige uno futuro.', 'error');
+            return;
+        }
     }
 
     const btn = document.getElementById('btn-reservar');
