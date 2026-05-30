@@ -2,15 +2,22 @@ gsap.registerPlugin(ScrollTrigger);
 
 // ─── Hero — entrada cinematográfica ──────────────────────────────────────────
 (function() {
+    gsap.set('.hero-badge-el', { opacity: 0, y: -35 });
+    gsap.set('.hero-title-1',  { opacity: 0, y: 80 });
+    gsap.set('.hero-title-2',  { opacity: 0, y: 80 });
+    gsap.set('.hero-subtitle', { opacity: 0, y: 30 });
+    gsap.set('.hero-cta-btns', { opacity: 0, y: 20 });
+    gsap.set('.hero-stat',     { opacity: 0, y: 22 });
+
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
     tl
-        .from('.hero-bg img',    { scale: 1.14, duration: 2.2, ease: 'power2.out' }, 0)
-        .from('.hero-badge-el',  { y: -35, opacity: 0, duration: 0.9 }, 0.25)
-        .from('.hero-title-1',   { y: 80,  opacity: 0, duration: 1.1, ease: 'power4.out' }, 0.45)
-        .from('.hero-title-2',   { y: 80,  opacity: 0, duration: 1.1, ease: 'power4.out' }, 0.62)
-        .from('.hero-subtitle',  { y: 30,  opacity: 0, duration: 0.9 }, 1.0)
-        .from('.hero-cta-btns',  { y: 20,  opacity: 0, duration: 0.7 }, 1.2)
-        .from('.hero-stat',      { y: 22,  opacity: 0, duration: 0.6, stagger: 0.15 }, 1.35);
+        .from('.hero-bg img',  { scale: 1.14, duration: 2.2, ease: 'power2.out' }, 0)
+        .to('.hero-badge-el',  { opacity: 1, y: 0, duration: 0.9 }, 0.25)
+        .to('.hero-title-1',   { opacity: 1, y: 0, duration: 1.1, ease: 'power4.out' }, 0.45)
+        .to('.hero-title-2',   { opacity: 1, y: 0, duration: 1.1, ease: 'power4.out' }, 0.62)
+        .to('.hero-subtitle',  { opacity: 1, y: 0, duration: 0.9 }, 1.0)
+        .to('.hero-cta-btns',  { opacity: 1, y: 0, duration: 0.7 }, 1.2)
+        .to('.hero-stat',      { opacity: 1, y: 0, duration: 0.6, stagger: 0.15 }, 1.35);
 })();
 
 // ─── Hero — parallax del fondo al hacer scroll ────────────────────────────────
@@ -23,21 +30,6 @@ gsap.to('.hero-bg img', {
         end: 'bottom top',
         scrub: 1.8
     }
-});
-
-// ─── Reveals genéricos (reemplaza IntersectionObserver) ──────────────────────
-gsap.utils.toArray('.scroll-animate').forEach(el => {
-    gsap.from(el, {
-        y: 45,
-        opacity: 0,
-        duration: 0.95,
-        ease: 'power3.out',
-        scrollTrigger: {
-            trigger: el,
-            start: 'top 88%',
-            toggleActions: 'play none none none'
-        }
-    });
 });
 
 // ─── Sobre Nosotros — parallax + scale reveal ─────────────────────────────────
@@ -64,72 +56,30 @@ gsap.to('.sobre-img-wrap img', {
     }
 });
 
-// ─── Barberos — stagger ───────────────────────────────────────────────────────
-gsap.from('#barberos .group', {
-    y: 55,
-    opacity: 0,
-    duration: 0.85,
-    stagger: 0.1,
-    ease: 'power3.out',
-    scrollTrigger: {
-        trigger: '#barberos .grid',
-        start: 'top 80%',
-        toggleActions: 'play none none none'
-    }
+// ─── Reveals genéricos — único handler para todas las secciones ───────────────
+// Un solo handler por elemento evita conflictos de doble animación
+gsap.utils.toArray('.scroll-animate').forEach(el => {
+    gsap.from(el, {
+        y: 40,
+        opacity: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+        scrollTrigger: {
+            trigger: el,
+            start: 'top 88%',
+            toggleActions: 'play none none none'
+        }
+    });
 });
 
-// ─── Servicios — stagger ─────────────────────────────────────────────────────
-gsap.from('#servicios .card-premium', {
-    y: 55,
-    opacity: 0,
-    duration: 0.85,
-    stagger: 0.1,
-    ease: 'power3.out',
-    scrollTrigger: {
-        trigger: '#servicios .grid',
-        start: 'top 80%',
-        toggleActions: 'play none none none'
-    }
-});
-
-// ─── Manicure — stagger ───────────────────────────────────────────────────────
-gsap.from('#manicure .card-premium', {
-    y: 55,
-    opacity: 0,
-    duration: 0.85,
-    stagger: 0.08,
-    ease: 'power3.out',
-    scrollTrigger: {
-        trigger: '#manicure .grid',
-        start: 'top 80%',
-        toggleActions: 'play none none none'
-    }
-});
-
-// ─── Testimonios — stagger ────────────────────────────────────────────────────
-gsap.from('.testimonios .card-premium', {
-    y: 45,
-    opacity: 0,
-    duration: 0.85,
-    stagger: 0.13,
-    ease: 'power3.out',
-    scrollTrigger: {
-        trigger: '.testimonios',
-        start: 'top 80%',
-        toggleActions: 'play none none none'
-    }
-});
-
-// ─── Galería — expand + parallax interior ─────────────────────────────────────
+// ─── Galería — expand cinematográfico + parallax interior ─────────────────────
 function initGalleryGsap() {
     ScrollTrigger.refresh();
 
     gsap.utils.toArray('.gallery-item').forEach((item, i) => {
-        // Imagen con escala inicial para dejar margen al parallax
         const img = item.querySelector('img');
         if (img) gsap.set(img, { scale: 1.12, transformOrigin: 'center center' });
 
-        // Expansión cinematográfica al entrar al viewport
         gsap.from(item, {
             scale: 0.82,
             opacity: 0,
@@ -143,7 +93,6 @@ function initGalleryGsap() {
             }
         });
 
-        // Parallax interior de la imagen
         if (img) {
             gsap.to(img, {
                 yPercent: -10,
