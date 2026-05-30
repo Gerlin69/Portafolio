@@ -148,11 +148,8 @@ body {
     will-change: transform;
 }
 
-/* Scroll animations — GSAP maneja la transición, solo ocultamos el estado inicial */
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-}
+/* Scroll animations — estado inicial manejado por GSAP via inline styles */
+.scroll-animate {}
 
 /* Parallax */
 .parallax {
