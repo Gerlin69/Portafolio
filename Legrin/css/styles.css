@@ -145,21 +145,13 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+    will-change: transform;
 }
 
-.gallery-item:hover img { transform: scale(1.05); }
-
-/* Scroll animations */
+/* Scroll animations — GSAP maneja la transición, solo ocultamos el estado inicial */
 .scroll-animate {
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.8s ease-out;
-}
-
-.scroll-animate.visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* Parallax */
@@ -246,9 +238,9 @@ body {
     opacity: 0.5;
 }
 
-/* Smooth transitions */
+/* Smooth transitions — solo color/background para no interferir con GSAP */
 * { transition: color 0.3s ease, background-color 0.3s ease; }
-button { transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1); }
+button { transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease; }
 
 @media (max-width: 768px) {
     .image-gallery { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }

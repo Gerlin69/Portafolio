@@ -1,7 +1,7 @@
 // ─── Gallery ──────────────────────────────────────────────────────────────────
 function loadCuts() {
     document.getElementById('galeria-gallery').innerHTML = cuts.map(cut => `
-        <div class="gallery-item scroll-animate">
+        <div class="gallery-item">
             <img src="${cut.image}" alt="${cut.title}" loading="lazy">
             <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-0 hover:opacity-100 transition duration-300 flex items-end p-6">
                 <div>
@@ -11,6 +11,7 @@ function loadCuts() {
             </div>
         </div>
     `).join('');
+    if (typeof initGalleryGsap === 'function') initGalleryGsap();
 }
 
 function loadProducts() {
@@ -45,12 +46,7 @@ function contactForProduct(productName) {
     window.open(`https://wa.me/${WHATSAPP_CONTACTO}?text=Estoy interesado en ${productName}`, '_blank');
 }
 
-// ─── Scroll animations ────────────────────────────────────────────────────────
-const scrollObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('visible');
-    });
-}, { threshold: 0.1 });
+// Scroll animations manejadas por GSAP en animations.js
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -72,8 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fechaInput = document.getElementById('fecha');
     fechaInput.setAttribute('min', fechaInicial);
     fechaInput.value = fechaInicial;
-
-    document.querySelectorAll('.scroll-animate').forEach(el => scrollObserver.observe(el));
 
     // Sincroniza estado desde Sheets al cargar para tener datos cross-device correctos
     await sincronizarEstadoDesdeSheets();

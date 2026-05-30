@@ -8,6 +8,8 @@
     <meta name="theme-color" content="#000000">
     <title>Legrin Barber | Barbería Premium - GringoLandia</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -65,28 +67,32 @@
     </nav>
 
     <!-- HERO SECTION PREMIUM -->
-    <section id="inicio" class="relative pt-32 pb-24 px-4 overflow-hidden">
-        <div class="absolute inset-0 -z-10">
-            <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+    <section id="inicio" class="relative pt-32 pb-24 px-4 overflow-hidden min-h-[90vh] flex items-center">
+        <!-- Cinematic background -->
+        <div class="hero-bg absolute inset-0 -z-10 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1920&q=80"
+                 alt="" class="w-full h-full object-cover" aria-hidden="true" style="will-change:transform;">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black"></div>
+            <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/8 rounded-full blur-3xl animate-pulse" style="animation-delay:1s;"></div>
         </div>
 
-        <div class="max-w-6xl mx-auto text-center">
-            <div class="space-y-6 fade-in-up">
-                <div class="inline-block badge-premium">
+        <div class="max-w-6xl mx-auto text-center w-full">
+            <div class="space-y-6">
+                <div class="hero-badge-el inline-block badge-premium">
                     <i class="fas fa-star"></i> Barbería Premium
                 </div>
 
                 <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
-                    <span class="gradient-text">Estilo Clásico</span><br>
-                    <span class="text-white">Técnica Moderna</span>
+                    <span class="hero-title-1 block gradient-text">Estilo Clásico</span>
+                    <span class="hero-title-2 block text-white">Técnica Moderna</span>
                 </h1>
 
-                <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                <p class="hero-subtitle text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
                     Bienvenido a Legrin Barber, donde la precisión se encuentra con la pasión. Cada corte es una obra maestra diseñada específicamente para ti.
                 </p>
 
-                <div class="flex gap-4 justify-center flex-wrap pt-4">
+                <div class="hero-cta-btns flex gap-4 justify-center flex-wrap pt-4">
                     <button onclick="scrollToSection('reservar')" class="btn-premium px-8 py-4 gradient-amber text-black font-bold rounded-xl hover:shadow-2xl hover:shadow-amber-500/30">
                         <i class="fas fa-calendar-check mr-2"></i> Reservar Ahora
                     </button>
@@ -97,15 +103,15 @@
 
                 <!-- Stats -->
                 <div class="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
-                    <div class="scroll-animate">
+                    <div class="hero-stat">
                         <div class="counter">50+</div>
                         <p class="text-gray-400 text-sm">Clientes Mensuales</p>
                     </div>
-                    <div class="scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="hero-stat">
                         <div class="counter">15+</div>
                         <p class="text-gray-400 text-sm">Años de Experiencia</p>
                     </div>
-                    <div class="scroll-animate" style="animation-delay: 0.4s;">
+                    <div class="hero-stat">
                         <div class="counter">5⭐</div>
                         <p class="text-gray-400 text-sm">Calificación Premium</p>
                     </div>
@@ -144,9 +150,9 @@
                     </div>
                 </div>
 
-                <div class="scroll-animate" style="animation-delay: 0.2s;">
-                    <div class="relative h-96 rounded-2xl overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1631856612727-a3be4e7f3c47?w=600&h=600&fit=crop" alt="Barbería Legrin" class="w-full h-full object-cover">
+                <div>
+                    <div class="sobre-img-wrap relative h-96 rounded-2xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1631856612727-a3be4e7f3c47?w=600&h=600&fit=crop" alt="Barbería Legrin" class="w-full h-full object-cover" style="will-change:transform;">
                         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                     </div>
                 </div>
@@ -673,7 +679,7 @@
     </section>
 
     <!-- TESTIMONIOS -->
-    <section class="py-24 px-4 bg-gradient-to-b from-black to-gray-900/20">
+    <section class="testimonios py-24 px-4 bg-gradient-to-b from-black to-gray-900/20">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">
@@ -803,6 +809,7 @@
     <script src="js/reservas.js"></script>
     <script src="js/barberos.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
     <script>
         (function() {
             var hoy = new Date();
