@@ -1,3 +1,14 @@
+// Token secreto — debe coincidir con APPS_SCRIPT_TOKEN en data.js
+var TOKEN_SECRETO = 'lgr2026sk9xMpQrT';
+
+// ─── Sanitización anti-inyección de fórmulas ──────────────────────────────────
+function sanitizarCampo(val) {
+  var s = String(val || '').trim();
+  // Bloquear prefijos que Google Sheets interpreta como fórmulas
+  if (/^[=+\-@|%`]/.test(s)) s = "'" + s;
+  return s;
+}
+
 // ─── Validación de datos ──────────────────────────────────────────────────────
 function validarDatosReserva(p) {
   if (!p.nombre || typeof p.nombre !== 'string' || p.nombre.trim().length < 2 || p.nombre.length > 80)
@@ -10,7 +21,7 @@ function validarDatosReserva(p) {
     return 'Fecha inválida';
   if (!p.hora || !/^\d{2}:\d{2}$/.test(p.hora))
     return 'Hora inválida';
-  return null; // sin errores
+  return null;
 }
 
 // ─── Rate limiting — máx 3 reservas por teléfono cada 10 minutos ─────────────
@@ -20,10 +31,10 @@ function verificarRateLimit(telefono) {
     var key = 'rl_' + telefono.toString().replace(/\D/g, '').substring(0, 15);
     var count = parseInt(cache.get(key) || '0');
     if (count >= 3) return false;
-    cache.put(key, String(count + 1), 600); // ventana de 10 minutos
+    cache.put(key, String(count + 1), 600);
     return true;
   } catch(e) {
-    return true; // si el cache falla, dejar pasar
+    return true;
   }
 }
 
@@ -44,7 +55,6 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Nueva reserva vía POST (fallback, el sitio usa GET)
     var error = validarDatosReserva(body);
     if (error) return ContentService.createTextOutput(JSON.stringify({ success: false, error: error }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -56,7 +66,7 @@ function doPost(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var hoja = ss.getSheetByName('Solicitudes');
     var nuevoID = hoja.getLastRow();
-    hoja.appendRow([nuevoID, body.nombre.trim(), body.telefono, body.barbero, body.fecha, body.hora, body.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
+    hoja.appendRow([nuevoID, sanitizarCampo(body.nombre), body.telefono, body.barbero, body.fecha, body.hora, body.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
     return ContentService.createTextOutput(JSON.stringify({ success: true, id: nuevoID }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
@@ -81,6 +91,12 @@ function doGet(e) {
     if (e.parameter.action === 'actualizarEstadoCorte') {
       actualizarEstadoCorteEnSheet(e.parameter);
       return ContentService.createTextOutput(JSON.stringify({ success: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Lectura de todas las solicitudes — requiere token secreto
+    if (e.parameter.token !== TOKEN_SECRETO) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -119,17 +135,15 @@ function doGet(e) {
 // ─── Guardar reserva vía GET ──────────────────────────────────────────────────
 function guardarReservaGet(p) {
   try {
-    // Validación de datos
     var error = validarDatosReserva(p);
     if (error) return { success: false, error: error };
 
-    // Rate limiting
     if (!verificarRateLimit(p.telefono)) return { success: false, error: 'Demasiadas solicitudes. Espera unos minutos.' };
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var hoja = ss.getSheetByName('Solicitudes');
     var nuevoID = hoja.getLastRow();
-    hoja.appendRow([nuevoID, p.nombre.trim(), p.telefono, p.barbero, p.fecha, p.hora, p.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
+    hoja.appendRow([nuevoID, sanitizarCampo(p.nombre), p.telefono, p.barbero, p.fecha, p.hora, p.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
     return { success: true, id: nuevoID };
   } catch(err) {
     return { success: false, error: err.toString() };
@@ -203,13 +217,25 @@ function actualizarEstadoCorteEnSheet(data) {
   }
   if (colEstado < 0) return;
 
+  // Búsqueda por ID con validación IDOR: verificar que nombre y barbero coinciden
   if (data.id && !isNaN(parseInt(data.id))) {
     var rowNum = parseInt(data.id) + 1;
-    hoja.getRange(rowNum, colEstado).setValue(nuevoEstado);
-    if (colMotivo > 0 && data.motivo) hoja.getRange(rowNum, colMotivo).setValue(data.motivo);
-    return;
+    if (rowNum >= 2 && rowNum <= valores.length) {
+      var filaVerif = valores[rowNum - 1];
+      var nombreVerif  = String(filaVerif[1] || '');
+      var barberoVerif = String(filaVerif[3] || '');
+      // Rechazar si los datos no coinciden con la fila
+      if (nombreVerif !== data.nombre || barberoVerif !== data.barbero) {
+        Logger.log('IDOR bloqueado: ID ' + data.id + ' no corresponde a ' + data.nombre + ' / ' + data.barbero);
+        return;
+      }
+      hoja.getRange(rowNum, colEstado).setValue(nuevoEstado);
+      if (colMotivo > 0 && data.motivo) hoja.getRange(rowNum, colMotivo).setValue(data.motivo);
+      return;
+    }
   }
 
+  // Fallback: buscar por campos
   var tz = Session.getScriptTimeZone();
   for (var i = 1; i < valores.length; i++) {
     var fila = valores[i];
