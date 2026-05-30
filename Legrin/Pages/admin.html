@@ -212,26 +212,67 @@
     let _idxNoRealizado = null;
     let _cortesActuales = {};
 
-    // ─── Autenticación ────────────────────────────────────────────────────────
+    // ─── Anti-XSS: escapar HTML antes de insertar datos del Sheet ────────────
+    function esc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ─── Autenticación con límite de intentos ─────────────────────────────────
+    let _intentosFallidos = 0;
+    let _bloqueadoHasta   = null;
+
     function verificarPin() {
-        const pin = document.getElementById('pin-input').value;
         const errorEl = document.getElementById('pin-error');
+        if (_bloqueadoHasta && Date.now() < _bloqueadoHasta) {
+            const mins = Math.ceil((_bloqueadoHasta - Date.now()) / 60000);
+            errorEl.textContent = `Bloqueado. Espera ${mins} minuto${mins > 1 ? 's' : ''}.`;
+            errorEl.style.display = 'block';
+            return;
+        }
+        const pin = document.getElementById('pin-input').value;
         if (pin === ADMIN_PIN) {
+            _intentosFallidos = 0;
+            _bloqueadoHasta   = null;
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('admin-content').style.display = 'block';
             iniciarAdmin();
+            resetSessionTimeout();
         } else {
+            _intentosFallidos++;
+            if (_intentosFallidos >= 5) {
+                _bloqueadoHasta   = Date.now() + 5 * 60 * 1000;
+                _intentosFallidos = 0;
+                errorEl.textContent = 'Demasiados intentos. Bloqueado por 5 minutos.';
+            } else {
+                const restantes = 5 - _intentosFallidos;
+                errorEl.textContent = `PIN incorrecto. ${restantes} intento${restantes !== 1 ? 's' : ''} restante${restantes !== 1 ? 's' : ''}.`;
+            }
             errorEl.style.display = 'block';
             document.getElementById('pin-input').value = '';
             document.getElementById('pin-input').style.borderColor = 'rgba(239,68,68,0.6)';
             setTimeout(() => {
-                errorEl.style.display = 'none';
+                if (!(_bloqueadoHasta && Date.now() < _bloqueadoHasta)) errorEl.style.display = 'none';
                 document.getElementById('pin-input').style.borderColor = '';
             }, 3000);
         }
     }
 
+    // ─── Timeout de sesión — cierre automático por inactividad ───────────────
+    let _sessionTimer = null;
+    function resetSessionTimeout() {
+        clearTimeout(_sessionTimer);
+        _sessionTimer = setTimeout(() => {
+            cerrarSesion();
+            mostrarNotificacion('Sesión cerrada por inactividad.', 'info');
+        }, 30 * 60 * 1000);
+    }
+    ['click','keydown','touchstart'].forEach(ev =>
+        document.addEventListener(ev, () => { if (_sessionTimer) resetSessionTimeout(); }, { passive: true })
+    );
+
     function cerrarSesion() {
+        clearTimeout(_sessionTimer);
+        _sessionTimer = null;
         document.getElementById('admin-content').style.display = 'none';
         document.getElementById('auth-overlay').style.display = 'flex';
         document.getElementById('pin-input').value = '';
@@ -332,7 +373,7 @@
                     <div class="flex justify-between text-gray-400">
                         <span>Próxima cita</span>
                         <span class="text-white font-medium text-right">${proxCita
-                            ? `${formatearHora12h(proxCita.hora)} · ${proxCita.nombre}`
+                            ? `${formatearHora12h(proxCita.hora)} · ${esc(proxCita.nombre)}`
                             : '<span class="text-gray-600">—</span>'}</span>
                     </div>
                     <div class="flex justify-between text-gray-400">
@@ -450,8 +491,8 @@
                             ${isToday ? `<p class="text-xs ${pasada ? 'text-gray-600' : 'text-gray-500'}">${timeLabel}</p>` : ''}
                         </div>
                         <div class="min-w-0">
-                            <p class="font-semibold truncate">${r.Nombre || ''}</p>
-                            <p class="text-gray-400 text-sm truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
+                            <p class="font-semibold truncate">${esc(r.Nombre)}</p>
+                            <p class="text-gray-400 text-sm truncate">${esc(r.Barbero)}${tipoCorte ? ' · ' + esc(tipoCorte) : ''}</p>
                         </div>
                     </div>
                     ${waLink
@@ -619,11 +660,11 @@
                             <i class="fas fa-user-slash text-red-400 text-sm"></i>
                         </div>
                         <div class="min-w-0">
-                            <p class="font-semibold truncate">${r.Nombre || ''}</p>
-                            <p class="text-gray-400 text-xs truncate">${r.Barbero || ''}${tipoCorte ? ' · ' + tipoCorte : ''}</p>
+                            <p class="font-semibold truncate">${esc(r.Nombre)}</p>
+                            <p class="text-gray-400 text-xs truncate">${esc(r.Barbero)}${tipoCorte ? ' · ' + esc(tipoCorte) : ''}</p>
                             <p class="text-gray-500 text-xs">${fecha} · ${formatearHora12h(horaStr)}</p>
                             <p class="text-red-400 text-xs mt-1 flex items-center gap-1">
-                                <i class="fas fa-times-circle"></i>${info.motivo || 'Sin motivo'}
+                                <i class="fas fa-times-circle"></i>${esc(info.motivo || 'Sin motivo')}
                             </p>
                         </div>
                     </div>
@@ -817,8 +858,8 @@
                     const fecha   = String(s.Fecha || '').substring(0, 10);
                     return `<div class="flex items-center justify-between py-2.5 border-b border-gray-800/60 text-sm last:border-0">
                         <div class="min-w-0">
-                            <p class="font-medium truncate">${s.Nombre || ''}</p>
-                            <p class="text-gray-500 text-xs truncate">${s.Barbero || ''}${tipo ? ' · ' + tipo : ''}</p>
+                            <p class="font-medium truncate">${esc(s.Nombre)}</p>
+                            <p class="text-gray-500 text-xs truncate">${esc(s.Barbero)}${tipo ? ' · ' + esc(tipo) : ''}</p>
                         </div>
                         <div class="text-right text-gray-400 text-xs flex-shrink-0 ml-4">
                             <p>${fecha}</p>
@@ -833,10 +874,10 @@
                 const fecha   = String(s.Fecha || '').substring(0, 10);
                 return `<div class="flex items-center justify-between py-2.5 border-b border-red-900/20 text-sm last:border-0">
                     <div class="min-w-0">
-                        <p class="font-medium truncate text-gray-400">${s.Nombre || ''}</p>
-                        <p class="text-gray-600 text-xs truncate">${s.Barbero || ''}${tipo ? ' · ' + tipo : ''}</p>
+                        <p class="font-medium truncate text-gray-400">${esc(s.Nombre)}</p>
+                        <p class="text-gray-600 text-xs truncate">${esc(s.Barbero)}${tipo ? ' · ' + esc(tipo) : ''}</p>
                         <p class="text-red-400/70 text-xs mt-0.5 flex items-center gap-1">
-                            <i class="fas fa-times-circle"></i>${info.motivo || 'Sin motivo'}
+                            <i class="fas fa-times-circle"></i>${esc(info.motivo || 'Sin motivo')}
                         </p>
                     </div>
                     <div class="text-right text-gray-500 text-xs flex-shrink-0 ml-4">

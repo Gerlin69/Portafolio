@@ -212,6 +212,10 @@ async function realizarReserva() {
         return;
     }
 
+    // Honeypot: si el campo oculto tiene valor, es un bot
+    const honeypot = document.getElementById('website');
+    if (honeypot && honeypot.value) return;
+
     const _hoyDate = new Date();
     const hoy = `${_hoyDate.getFullYear()}-${String(_hoyDate.getMonth()+1).padStart(2,'0')}-${String(_hoyDate.getDate()).padStart(2,'0')}`;
     if (fecha < hoy) {

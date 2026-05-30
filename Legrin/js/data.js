@@ -20,7 +20,7 @@ const DURACION_CORTE = 45;
 const ALMUERZO = { inicio: 13 * 60, fin: 14 * 60, buffer: 5 }; // 1:00 PM - 2:00 PM, reinicia a las 2:05 PM
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIepuA4Uwpwm46_-ACkX0dr8WUryjrL71bwBslMGafEYR4hDPuPr8pkEJBOFFDbGU_6g/exec';
-const APPS_SCRIPT_TOKEN = 'lgr2026sk9xMpQrT'; // cambiar este valor y actualizar también en Apps Script
+const APPS_SCRIPT_TOKEN = 'Lgr9vBk2xMpQ7nRs4'; // cambiar este valor y actualizar también en Apps Script
 
 const WHATSAPP_ADMIN = '573233486719';
 const WHATSAPP_CONTACTO = '573044652515';

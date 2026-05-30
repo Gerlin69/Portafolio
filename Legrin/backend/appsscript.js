@@ -1,5 +1,5 @@
 // Token secreto — debe coincidir con APPS_SCRIPT_TOKEN en data.js
-var TOKEN_SECRETO = 'lgr2026sk9xMpQrT';
+var TOKEN_SECRETO = 'Lgr9vBk2xMpQ7nRs4';
 
 // ─── Sanitización anti-inyección de fórmulas ──────────────────────────────────
 function sanitizarCampo(val) {

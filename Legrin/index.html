@@ -653,6 +653,10 @@
                         <input type="hidden" id="hora">
                     </div>
 
+                    <!-- Honeypot anti-bots: campo invisible para humanos, bots lo llenan -->
+                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off"
+                        aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;pointer-events:none;">
+
                     <button id="btn-reservar" type="button" onclick="realizarReserva()" class="btn-premium w-full gradient-amber text-black font-bold py-4 rounded-xl text-lg hover:shadow-2xl hover:shadow-amber-500/40">
                         <i class="fas fa-check-circle mr-2"></i> Realizar Reserva
                     </button>
