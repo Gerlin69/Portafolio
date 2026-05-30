@@ -1,3 +1,33 @@
+// ─── Validación de datos ──────────────────────────────────────────────────────
+function validarDatosReserva(p) {
+  if (!p.nombre || typeof p.nombre !== 'string' || p.nombre.trim().length < 2 || p.nombre.length > 80)
+    return 'Nombre inválido';
+  if (!p.telefono || !/^\d{7,15}$/.test(p.telefono.toString().replace(/\s/g, '')))
+    return 'Teléfono inválido';
+  if (!p.barbero || p.barbero.length > 60)
+    return 'Barbero inválido';
+  if (!p.fecha || !/^\d{4}-\d{2}-\d{2}$/.test(p.fecha))
+    return 'Fecha inválida';
+  if (!p.hora || !/^\d{2}:\d{2}$/.test(p.hora))
+    return 'Hora inválida';
+  return null; // sin errores
+}
+
+// ─── Rate limiting — máx 3 reservas por teléfono cada 10 minutos ─────────────
+function verificarRateLimit(telefono) {
+  try {
+    var cache = CacheService.getScriptCache();
+    var key = 'rl_' + telefono.toString().replace(/\D/g, '').substring(0, 15);
+    var count = parseInt(cache.get(key) || '0');
+    if (count >= 3) return false;
+    cache.put(key, String(count + 1), 600); // ventana de 10 minutos
+    return true;
+  } catch(e) {
+    return true; // si el cache falla, dejar pasar
+  }
+}
+
+// ─── doPost ───────────────────────────────────────────────────────────────────
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
@@ -14,10 +44,19 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    // Nueva reserva vía POST (fallback, el sitio usa GET)
+    var error = validarDatosReserva(body);
+    if (error) return ContentService.createTextOutput(JSON.stringify({ success: false, error: error }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+    if (!verificarRateLimit(body.telefono)) return ContentService.createTextOutput(
+      JSON.stringify({ success: false, error: 'Demasiadas solicitudes. Espera unos minutos.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var hoja = ss.getSheetByName('Solicitudes');
     var nuevoID = hoja.getLastRow();
-    hoja.appendRow([nuevoID, body.nombre, body.telefono, body.barbero, body.fecha, body.hora, body.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
+    hoja.appendRow([nuevoID, body.nombre.trim(), body.telefono, body.barbero, body.fecha, body.hora, body.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
     return ContentService.createTextOutput(JSON.stringify({ success: true, id: nuevoID }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
@@ -26,6 +65,7 @@ function doPost(e) {
   }
 }
 
+// ─── doGet ────────────────────────────────────────────────────────────────────
 function doGet(e) {
   try {
     if (e.parameter.action === 'getBarberStatus') {
@@ -76,18 +116,27 @@ function doGet(e) {
   }
 }
 
+// ─── Guardar reserva vía GET ──────────────────────────────────────────────────
 function guardarReservaGet(p) {
   try {
+    // Validación de datos
+    var error = validarDatosReserva(p);
+    if (error) return { success: false, error: error };
+
+    // Rate limiting
+    if (!verificarRateLimit(p.telefono)) return { success: false, error: 'Demasiadas solicitudes. Espera unos minutos.' };
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var hoja = ss.getSheetByName('Solicitudes');
     var nuevoID = hoja.getLastRow();
-    hoja.appendRow([nuevoID, p.nombre, p.telefono, p.barbero, p.fecha, p.hora, p.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
+    hoja.appendRow([nuevoID, p.nombre.trim(), p.telefono, p.barbero, p.fecha, p.hora, p.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
     return { success: true, id: nuevoID };
   } catch(err) {
     return { success: false, error: err.toString() };
   }
 }
 
+// ─── Actualizar estado de barbero ─────────────────────────────────────────────
 function actualizarEstadoBarbero(key, nuevoEstado, tiempoRetorno, ultimaActualizacion) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -113,6 +162,7 @@ function actualizarEstadoBarbero(key, nuevoEstado, tiempoRetorno, ultimaActualiz
   }
 }
 
+// ─── Obtener estado de barberos ───────────────────────────────────────────────
 function obtenerEstadoBarberos_() {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -135,6 +185,7 @@ function obtenerEstadoBarberos_() {
   }
 }
 
+// ─── Actualizar estado del corte en el Sheet ──────────────────────────────────
 function actualizarEstadoCorteEnSheet(data) {
   var ss   = SpreadsheetApp.getActiveSpreadsheet();
   var hoja = ss.getSheetByName('Solicitudes');
