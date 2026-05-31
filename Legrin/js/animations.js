@@ -72,38 +72,3 @@ gsap.utils.toArray('.scroll-animate').forEach(el => {
     });
 });
 
-// ─── Galería — expand cinematográfico + parallax interior ─────────────────────
-function initGalleryGsap() {
-    ScrollTrigger.refresh();
-
-    gsap.utils.toArray('.gallery-item').forEach((item, i) => {
-        const img = item.querySelector('img');
-        if (img) gsap.set(img, { scale: 1.12, transformOrigin: 'center center' });
-
-        gsap.from(item, {
-            scale: 0.82,
-            opacity: 0,
-            duration: 1.0,
-            ease: 'power2.out',
-            delay: (i % 3) * 0.07,
-            scrollTrigger: {
-                trigger: item,
-                start: 'top 90%',
-                toggleActions: 'play none none none'
-            }
-        });
-
-        if (img) {
-            gsap.to(img, {
-                yPercent: -10,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: item,
-                    start: 'top bottom',
-                    end: 'bottom top',
-                    scrub: true
-                }
-            });
-        }
-    });
-}

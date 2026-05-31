@@ -1,18 +1,3 @@
-// ─── Gallery ──────────────────────────────────────────────────────────────────
-function loadCuts() {
-    document.getElementById('galeria-gallery').innerHTML = cuts.map(cut => `
-        <div class="gallery-item">
-            <img src="${cut.image}" alt="${cut.title}" loading="lazy">
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-0 hover:opacity-100 transition duration-300 flex items-end p-6">
-                <div>
-                    <h3 class="text-xl font-bold">${cut.title}</h3>
-                    <p class="text-amber-400 text-sm">Click para reservar</p>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    if (typeof initGalleryGsap === 'function') initGalleryGsap();
-}
 
 function loadProducts() {
     document.getElementById('productos-gallery').innerHTML = products.map(product => `
@@ -50,7 +35,6 @@ function contactForProduct(productName) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-    loadCuts();
     loadProducts();
 
     // Si el horario de hoy ya terminó, pre-seleccionar mañana

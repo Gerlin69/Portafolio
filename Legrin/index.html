@@ -586,16 +586,29 @@
         </div>
     </section>
 
-    <!-- GALERÍA -->
-    <section id="galeria" class="py-24 px-4 bg-black">
+    <!-- GALERÍA 3D CAROUSEL -->
+    <section id="galeria" class="py-24 px-4 bg-black overflow-hidden">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">
                     <span class="gradient-text">Nuestros Trabajos</span>
                 </h2>
-                <p class="text-gray-400 text-lg">Trabajos realizados con pasión y precisión. Cada corte cuenta una historia.</p>
+                <p class="text-gray-400 text-lg">Desliza para ver más trabajos realizados con pasión</p>
             </div>
-            <div class="image-gallery" id="galeria-gallery"></div>
+
+            <div class="relative w-full h-auto py-12">
+                <div class="carousel-wheel-container" id="carouselWheel"></div>
+                <button id="btnPrev" class="carousel-btn carousel-btn-prev" aria-label="Anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="btnNext" class="carousel-btn carousel-btn-next" aria-label="Siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-center mt-8">
+                <div id="carouselDots" class="carousel-dots-container"></div>
+            </div>
         </div>
     </section>
 
@@ -810,11 +823,12 @@
         </div>
     </section>
 
-    <!-- SCRIPTS: data → reservas → barberos → main (orden de dependencias) -->
+    <!-- SCRIPTS: data → reservas → barberos → main → carousel → animations -->
     <script src="js/data.js"></script>
     <script src="js/reservas.js"></script>
     <script src="js/barberos.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/carousel.js"></script>
     <script src="js/animations.js"></script>
     <script>
         (function() {
