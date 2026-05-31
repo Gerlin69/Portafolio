@@ -63,7 +63,7 @@ function doPost(e) {
       JSON.stringify({ success: false, error: 'Demasiadas solicitudes. Espera unos minutos.' }))
       .setMimeType(ContentService.MimeType.JSON);
 
-    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
     var hoja = ss.getSheetByName('Solicitudes');
     var nuevoID = hoja.getLastRow();
     hoja.appendRow([nuevoID, sanitizarCampo(body.nombre), body.telefono, body.barbero, body.fecha, body.hora, body.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
@@ -100,7 +100,7 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
     var hoja = ss.getSheetByName('Solicitudes');
     var datos = hoja.getDataRange().getValues();
     var headers = datos[0];
@@ -140,7 +140,7 @@ function guardarReservaGet(p) {
 
     if (!verificarRateLimit(p.telefono)) return { success: false, error: 'Demasiadas solicitudes. Espera unos minutos.' };
 
-    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
     var hoja = ss.getSheetByName('Solicitudes');
     var nuevoID = hoja.getLastRow();
     hoja.appendRow([nuevoID, sanitizarCampo(p.nombre), p.telefono, p.barbero, p.fecha, p.hora, p.tipoCorte || '', 'Pendiente', '', new Date().toLocaleString()]);
@@ -153,7 +153,7 @@ function guardarReservaGet(p) {
 // ─── Actualizar estado de barbero ─────────────────────────────────────────────
 function actualizarEstadoBarbero(key, nuevoEstado, tiempoRetorno, ultimaActualizacion) {
   try {
-    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
     var hoja = ss.getSheetByName('Estado Barberos');
     if (!hoja) {
       hoja = ss.insertSheet('Estado Barberos');
@@ -179,7 +179,7 @@ function actualizarEstadoBarbero(key, nuevoEstado, tiempoRetorno, ultimaActualiz
 // ─── Obtener estado de barberos ───────────────────────────────────────────────
 function obtenerEstadoBarberos_() {
   try {
-    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+    var ss = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
     var hoja = ss.getSheetByName('Estado Barberos');
     if (!hoja) return { barberos: {} };
     var datos = hoja.getDataRange().getValues();
@@ -201,7 +201,7 @@ function obtenerEstadoBarberos_() {
 
 // ─── Actualizar estado del corte en el Sheet ──────────────────────────────────
 function actualizarEstadoCorteEnSheet(data) {
-  var ss   = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+  var ss   = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
   var hoja = ss.getSheetByName('Solicitudes');
   if (!hoja) return;
 
@@ -260,7 +260,7 @@ function actualizarEstadoCorteEnSheet(data) {
 // ─── Backup Manual ────────────────────────────────────────────────────────────
 // Ejecuta esta función manualmente desde el editor después de hacer cambios.
 function crearBackup() {
-  var ss    = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg');
+  var ss    = SpreadsheetApp.openById('1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg') // Sheet: Solicitudes (legrinbarber@gmail.com);
   var tz    = Session.getScriptTimeZone();
   var fecha = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm');
   ss.copy('Legrin Backup ' + fecha);
