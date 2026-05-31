@@ -53,17 +53,15 @@ function initWheelCarousel() {
     if (btnPrev) btnPrev.addEventListener('click', deslizarAnterior);
     if (btnNext) btnNext.addEventListener('click', deslizarSiguiente);
 
-    // Scroll wheel — captura scroll solo cuando el carousel está visible
+    // Scroll wheel — solo cuando el mouse está encima del carousel (no bloquea el scroll de la página)
     let scrollTimeout;
-    window.addEventListener('wheel', (e) => {
-        if (isInViewport(container)) {
-            e.preventDefault();
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                if (e.deltaY > 0) deslizarSiguiente();
-                else deslizarAnterior();
-            }, 100);
-        }
+    container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            if (e.deltaY > 0) deslizarSiguiente();
+            else deslizarAnterior();
+        }, 100);
     }, { passive: false });
 
     // Touch swipe
