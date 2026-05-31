@@ -56,56 +56,21 @@ gsap.to('.sobre-img-wrap img', {
     }
 });
 
-// ─── Parallax orbs — Servicios, Manicure, Productos ──────────────────────────
-// Orbs decorativos dorados creados en JS para no tocar el HTML
-(function() {
-    var secciones = [
-        { id: '#servicios', left: '5%',   top: '-10%', w: 800 },
-        { id: '#manicure',  left: '55%',  top: '5%',   w: 750 },
-        { id: '#productos', left: '10%',  top: '0%',   w: 700 }
-    ];
-
-    secciones.forEach(function(cfg) {
-        var section = document.querySelector(cfg.id);
-        if (!section) return;
-
-        var orb = document.createElement('div');
-        var pos = 'left:' + cfg.left + ';top:' + cfg.top;
-
-        orb.style.cssText = [
-            'position:absolute',
-            'width:' + cfg.w + 'px',
-            'height:' + cfg.w + 'px',
-            'border-radius:50%',
-            'background:radial-gradient(circle,rgba(251,191,36,0.18) 0%,rgba(251,191,36,0.06) 40%,transparent 70%)',
-            'pointer-events:none',
-            'z-index:0',
-            'will-change:transform',
-            'filter:blur(40px)',
-            pos
-        ].join(';');
-
-        section.style.position = 'relative';
-        section.style.overflow = 'hidden';
-        section.insertBefore(orb, section.firstChild);
-
-        // Contenido encima del orb
-        section.querySelectorAll(':scope > div').forEach(function(d) {
-            if (!d.style.position) d.style.position = 'relative';
-        });
-
-        gsap.to(orb, {
-            yPercent: -45,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: section,
-                start: 'top bottom',
-                end: 'bottom top',
-                scrub: 2.2
-            }
-        });
+// ─── Parallax — Servicios, Manicure, Productos ───────────────────────────────
+['#servicios', '#manicure', '#productos'].forEach(function(id) {
+    var img = document.querySelector(id + ' .section-bg-wrap img');
+    if (!img) return;
+    gsap.to(img, {
+        yPercent: -22,
+        ease: 'none',
+        scrollTrigger: {
+            trigger: id,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.8
+        }
     });
-})();
+});
 
 // ─── Productos — animación de entrada (llamada después de cargar las tarjetas) ─
 function initProductsGsap() {
