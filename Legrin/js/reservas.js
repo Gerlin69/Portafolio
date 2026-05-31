@@ -54,7 +54,7 @@ function parsearHora(val) {
 async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tipoCorte) {
     try {
         const params = new URLSearchParams({ action: 'nuevaReserva', nombre, telefono, barbero, fecha, hora, tipoCorte });
-        const response = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+        const response = await fetch(`${APPS_SCRIPT_URL}?${params}`, { credentials: 'omit' });
         const data = await response.json();
         return data.success ? true : null;
     } catch {
@@ -64,7 +64,7 @@ async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tip
 
 async function obtenerSolicitudesGoogleSheets() {
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?token=${APPS_SCRIPT_TOKEN}&_t=${Date.now()}`);
+        const response = await fetch(`${APPS_SCRIPT_URL}?token=${APPS_SCRIPT_TOKEN}&_t=${Date.now()}`, { credentials: 'omit' });
         const data = await response.json();
         return Array.isArray(data) ? data : [];
     } catch {

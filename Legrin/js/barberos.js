@@ -146,6 +146,7 @@ async function _sincronizarASheets(key, datos) {
         await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
+            credentials: 'omit',
             body: JSON.stringify({
                 action: 'updateBarberStatus',
                 barbero: key,
@@ -159,7 +160,7 @@ async function _sincronizarASheets(key, datos) {
 
 async function sincronizarEstadoDesdeSheets() {
     try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=getBarberStatus`);
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=getBarberStatus`, { credentials: 'omit' });
         const data = await res.json();
         if (data && data.barberos && typeof data.barberos === 'object') {
             guardarEstadoBarberos(data.barberos);
