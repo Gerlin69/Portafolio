@@ -19,7 +19,7 @@ const HORARIOS_DIA = {
 const DURACION_CORTE = 45;
 const ALMUERZO = { inicio: 13 * 60, fin: 14 * 60, buffer: 5 }; // 1:00 PM - 2:00 PM, reinicia a las 2:05 PM
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvRvwIhUcnf95k45FN0YE_88O1qjO-5JwsZ3r8u0c2pfJxfVUmAiIM6S0xrt68pT-TcA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkZB0MyiCJoVroKVuG7Povnf7KQaZPe4sNAjVQcnNde1-tXIhcD6pmmLbecGBHAy-LMA/exec';
 const APPS_SCRIPT_TOKEN = 'Lgr9vBk2xMpQ7nRs4'; // cambiar este valor y actualizar también en Apps Script
 const IMGBB_API_KEY = 'b60c57bd67096bc0d9e5d5789473aab2'; // Obtén tu API key gratuita en: https://api.imgbb.com/
 
