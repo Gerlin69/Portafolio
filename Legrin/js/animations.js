@@ -60,9 +60,9 @@ gsap.to('.sobre-img-wrap img', {
 // Orbs decorativos dorados creados en JS para no tocar el HTML
 (function() {
     var secciones = [
-        { id: '#servicios', left: '-8%',  top: '10%',  w: 700 },
-        { id: '#manicure',  right: '-8%', top: '25%',  w: 650 },
-        { id: '#productos', left: '20%',  top: '30%',  w: 600 }
+        { id: '#servicios', left: '5%',   top: '-10%', w: 800 },
+        { id: '#manicure',  left: '55%',  top: '5%',   w: 750 },
+        { id: '#productos', left: '10%',  top: '0%',   w: 700 }
     ];
 
     secciones.forEach(function(cfg) {
@@ -70,19 +70,18 @@ gsap.to('.sobre-img-wrap img', {
         if (!section) return;
 
         var orb = document.createElement('div');
-        var pos = cfg.left
-            ? 'left:' + cfg.left + ';top:' + cfg.top
-            : 'right:' + cfg.right + ';top:' + cfg.top;
+        var pos = 'left:' + cfg.left + ';top:' + cfg.top;
 
         orb.style.cssText = [
             'position:absolute',
             'width:' + cfg.w + 'px',
             'height:' + cfg.w + 'px',
             'border-radius:50%',
-            'background:radial-gradient(circle,rgba(251,191,36,0.09) 0%,transparent 65%)',
+            'background:radial-gradient(circle,rgba(251,191,36,0.18) 0%,rgba(251,191,36,0.06) 40%,transparent 70%)',
             'pointer-events:none',
             'z-index:0',
             'will-change:transform',
+            'filter:blur(40px)',
             pos
         ].join(';');
 
