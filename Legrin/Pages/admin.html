@@ -1026,11 +1026,32 @@
     }
 
     async function _enviarFoto(base64, mimeType, nombre, tipo, productoId) {
-        const res = await fetch(APPS_SCRIPT_URL, {
+        if (!IMGBB_API_KEY) throw new Error('Falta la API key de ImgBB. Agrégala en js/data.js');
+
+        // 1. Subir imagen directamente a ImgBB desde el browser
+        const form = new FormData();
+        form.append('image', base64.replace(/^data:[^;]+;base64,/, ''));
+        if (nombre) form.append('name', nombre.replace(/\.[^.]+$/, ''));
+
+        const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
             method: 'POST',
-            credentials: 'omit',
-            body: JSON.stringify({ action: 'subirFoto', token: APPS_SCRIPT_TOKEN, base64, mimeType, nombre, tipo, productoId: productoId || '' })
+            body: form
         });
+        const imgbbData = await imgbbRes.json();
+        if (!imgbbData.success) throw new Error(imgbbData.error?.message || 'Error ImgBB');
+
+        const url = imgbbData.data.display_url;
+
+        // 2. Guardar solo la URL en Sheets via Apps Script GET (sin Drive)
+        const params = new URLSearchParams({
+            action: 'guardarFoto',
+            token: APPS_SCRIPT_TOKEN,
+            url,
+            tipo: tipo || 'galeria',
+            nombre: nombre || 'foto',
+            productoId: productoId || ''
+        });
+        const res = await fetch(`${APPS_SCRIPT_URL}?${params}`, { credentials: 'omit' });
         return res.json();
     }
 

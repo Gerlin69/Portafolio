@@ -21,6 +21,7 @@ const ALMUERZO = { inicio: 13 * 60, fin: 14 * 60, buffer: 5 }; // 1:00 PM - 2:00
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvRvwIhUcnf95k45FN0YE_88O1qjO-5JwsZ3r8u0c2pfJxfVUmAiIM6S0xrt68pT-TcA/exec';
 const APPS_SCRIPT_TOKEN = 'Lgr9vBk2xMpQ7nRs4'; // cambiar este valor y actualizar también en Apps Script
+const IMGBB_API_KEY = ''; // Obtén tu API key gratuita en: https://api.imgbb.com/
 
 const WHATSAPP_ADMIN = '573233486719';
 const WHATSAPP_CONTACTO = '573044652515';

@@ -108,6 +108,14 @@ function doGet(e) {
       return ContentService.createTextOutput(JSON.stringify(_getFotos(e.parameter.tipo, e.parameter.productoId))).setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (e.parameter.action === 'guardarFoto') {
+      if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
+      var hoja = _getHojaFotos();
+      var id   = Utilities.getUuid();
+      hoja.appendRow([id, e.parameter.url || '', e.parameter.tipo || 'galeria', e.parameter.productoId || '', e.parameter.nombre || 'foto', new Date().toLocaleString()]);
+      return ContentService.createTextOutput(JSON.stringify({ success: true, url: e.parameter.url, id: id })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (e.parameter.action === 'getBarberStatus') {
       return ContentService.createTextOutput(JSON.stringify(obtenerEstadoBarberos_()))
         .setMimeType(ContentService.MimeType.JSON);
