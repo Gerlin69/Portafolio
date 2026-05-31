@@ -9,13 +9,22 @@ function sanitizarCampo(val) {
   return s;
 }
 
+// ─── Whitelist de barberos (debe coincidir con BARBEROS_CONFIG en data.js) ────
+var BARBEROS_VALIDOS = [
+  'Leider V.',
+  'Andres M. "Gringo"',
+  'Freddy R "Dobby"',
+  'Felipe M. "Tyga"',
+  'Juan Diaz "Polo"'
+];
+
 // ─── Validación de datos ──────────────────────────────────────────────────────
 function validarDatosReserva(p) {
   if (!p.nombre || typeof p.nombre !== 'string' || p.nombre.trim().length < 2 || p.nombre.length > 80)
     return 'Nombre inválido';
   if (!p.telefono || !/^\d{7,15}$/.test(p.telefono.toString().replace(/\s/g, '')))
     return 'Teléfono inválido';
-  if (!p.barbero || p.barbero.length > 60)
+  if (!p.barbero || BARBEROS_VALIDOS.indexOf(String(p.barbero)) < 0)
     return 'Barbero inválido';
   if (!p.fecha || !/^\d{4}-\d{2}-\d{2}$/.test(p.fecha))
     return 'Fecha inválida';
@@ -44,12 +53,18 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
 
     if (body.action === 'updateBarberStatus') {
+      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+        JSON.stringify({ success: false, error: 'No autorizado' }))
+        .setMimeType(ContentService.MimeType.JSON);
       actualizarEstadoBarbero(body.barbero, body.estado, body.tiempoRetorno, body.ultimaActualizacion);
       return ContentService.createTextOutput(JSON.stringify({ success: true }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
     if (body.action === 'actualizarEstadoCorte') {
+      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+        JSON.stringify({ success: false, error: 'No autorizado' }))
+        .setMimeType(ContentService.MimeType.JSON);
       actualizarEstadoCorteEnSheet(body);
       return ContentService.createTextOutput(JSON.stringify({ success: true }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -89,6 +104,9 @@ function doGet(e) {
     }
 
     if (e.parameter.action === 'actualizarEstadoCorte') {
+      if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+        JSON.stringify({ success: false, error: 'No autorizado' }))
+        .setMimeType(ContentService.MimeType.JSON);
       actualizarEstadoCorteEnSheet(e.parameter);
       return ContentService.createTextOutput(JSON.stringify({ success: true }))
         .setMimeType(ContentService.MimeType.JSON);

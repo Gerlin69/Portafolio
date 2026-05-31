@@ -149,6 +149,7 @@ async function _sincronizarASheets(key, datos) {
             credentials: 'omit',
             body: JSON.stringify({
                 action: 'updateBarberStatus',
+                token: APPS_SCRIPT_TOKEN,
                 barbero: key,
                 estado: datos.estado,
                 tiempoRetorno: datos.tiempoRetorno || '',
