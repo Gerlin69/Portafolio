@@ -56,6 +56,75 @@ gsap.to('.sobre-img-wrap img', {
     }
 });
 
+// ─── Parallax orbs — Servicios, Manicure, Productos ──────────────────────────
+// Orbs decorativos dorados creados en JS para no tocar el HTML
+(function() {
+    var secciones = [
+        { id: '#servicios', left: '-8%',  top: '10%',  w: 700 },
+        { id: '#manicure',  right: '-8%', top: '25%',  w: 650 },
+        { id: '#productos', left: '20%',  top: '30%',  w: 600 }
+    ];
+
+    secciones.forEach(function(cfg) {
+        var section = document.querySelector(cfg.id);
+        if (!section) return;
+
+        var orb = document.createElement('div');
+        var pos = cfg.left
+            ? 'left:' + cfg.left + ';top:' + cfg.top
+            : 'right:' + cfg.right + ';top:' + cfg.top;
+
+        orb.style.cssText = [
+            'position:absolute',
+            'width:' + cfg.w + 'px',
+            'height:' + cfg.w + 'px',
+            'border-radius:50%',
+            'background:radial-gradient(circle,rgba(251,191,36,0.09) 0%,transparent 65%)',
+            'pointer-events:none',
+            'z-index:0',
+            'will-change:transform',
+            pos
+        ].join(';');
+
+        section.style.position = 'relative';
+        section.style.overflow = 'hidden';
+        section.insertBefore(orb, section.firstChild);
+
+        // Contenido encima del orb
+        section.querySelectorAll(':scope > div').forEach(function(d) {
+            if (!d.style.position) d.style.position = 'relative';
+        });
+
+        gsap.to(orb, {
+            yPercent: -45,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: section,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 2.2
+            }
+        });
+    });
+})();
+
+// ─── Productos — animación de entrada (llamada después de cargar las tarjetas) ─
+function initProductsGsap() {
+    ScrollTrigger.refresh();
+    gsap.from('#productos-gallery .card-premium', {
+        y: 55,
+        opacity: 0,
+        duration: 0.85,
+        ease: 'power3.out',
+        stagger: 0.14,
+        scrollTrigger: {
+            trigger: '#productos',
+            start: 'top 82%',
+            toggleActions: 'play none none none'
+        }
+    });
+}
+
 // ─── Reveals genéricos — único handler para todas las secciones ───────────────
 // Un solo handler por elemento evita conflictos de doble animación
 gsap.utils.toArray('.scroll-animate').forEach(el => {

@@ -7,7 +7,8 @@ async function loadProducts() {
         if (data.fotos) data.fotos.forEach(f => { if (f.productoId) fotosPorId[f.productoId] = f.url; });
     } catch {}
 
-    document.getElementById('productos-gallery').innerHTML = products.map(product => {
+    const gallery = document.getElementById('productos-gallery');
+    gallery.innerHTML = products.map(product => {
         const img = fotosPorId[String(product.id)] || product.image;
         return `
         <div class="card-premium rounded-2xl overflow-hidden scroll-animate">
@@ -24,6 +25,8 @@ async function loadProducts() {
             </div>
         </div>`;
     }).join('');
+
+    if (typeof initProductsGsap === 'function') initProductsGsap();
 }
 
 // ─── Navegación ───────────────────────────────────────────────────────────────
