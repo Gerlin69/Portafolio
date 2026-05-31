@@ -1,5 +1,6 @@
 // Token secreto — debe coincidir con APPS_SCRIPT_TOKEN en data.js
 var TOKEN_SECRETO = 'Lgr9vBk2xMpQ7nRs4';
+var SHEET_ID      = '1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg';
 
 // ─── Sanitización anti-inyección de fórmulas ──────────────────────────────────
 function sanitizarCampo(val) {
@@ -52,6 +53,16 @@ function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
 
+    if (body.action === 'subirFoto') {
+      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(JSON.stringify(_subirFoto(body.base64, body.mimeType, body.nombre, body.tipo, body.productoId))).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (body.action === 'eliminarFoto') {
+      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(JSON.stringify(_eliminarFoto(body.id))).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (body.action === 'updateBarberStatus') {
       if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
         JSON.stringify({ success: false, error: 'No autorizado' }))
@@ -93,6 +104,10 @@ function doPost(e) {
 // ─── doGet ────────────────────────────────────────────────────────────────────
 function doGet(e) {
   try {
+    if (e.parameter.action === 'getFotos') {
+      return ContentService.createTextOutput(JSON.stringify(_getFotos(e.parameter.tipo, e.parameter.productoId))).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (e.parameter.action === 'getBarberStatus') {
       return ContentService.createTextOutput(JSON.stringify(obtenerEstadoBarberos_()))
         .setMimeType(ContentService.MimeType.JSON);
@@ -273,6 +288,63 @@ function actualizarEstadoCorteEnSheet(data) {
       return;
     }
   }
+}
+
+// ─── Fotos — Google Drive + hoja "Fotos" ─────────────────────────────────────
+function _getHojaFotos() {
+  var ss   = SpreadsheetApp.openById(SHEET_ID);
+  var hoja = ss.getSheetByName('Fotos');
+  if (!hoja) {
+    hoja = ss.insertSheet('Fotos');
+    hoja.appendRow(['ID', 'URL', 'Tipo', 'ProductoId', 'Nombre', 'FechaSubida']);
+  }
+  return hoja;
+}
+
+function _subirFoto(base64, mimeType, nombre, tipo, productoId) {
+  var datos   = base64.replace(/^data:[^;]+;base64,/, '');
+  var bytes   = Utilities.base64Decode(datos);
+  var blob    = Utilities.newBlob(bytes, mimeType || 'image/jpeg', nombre || 'foto.jpg');
+
+  var folders = DriveApp.getFoldersByName('Legrin Fotos');
+  var folder  = folders.hasNext() ? folders.next() : DriveApp.createFolder('Legrin Fotos');
+  var file    = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+
+  var fileId = file.getId();
+  var url    = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w800-h1000';
+
+  var hoja = _getHojaFotos();
+  var id   = Utilities.getUuid();
+  hoja.appendRow([id, url, tipo || 'galeria', productoId || '', nombre || 'foto.jpg', new Date().toLocaleString()]);
+  return { success: true, url: url, id: id };
+}
+
+function _getFotos(tipo, productoId) {
+  var hoja  = _getHojaFotos();
+  var datos = hoja.getDataRange().getValues();
+  if (datos.length < 2) return { fotos: [] };
+  var fotos = datos.slice(1).filter(function(r) {
+    if (!r[0]) return false;
+    if (tipo && String(r[2]).toLowerCase() !== tipo.toLowerCase()) return false;
+    if (productoId && String(r[3]) !== String(productoId)) return false;
+    return true;
+  }).map(function(r) {
+    return { id: String(r[0]), url: String(r[1]), tipo: String(r[2]), productoId: String(r[3]), nombre: String(r[4]) };
+  });
+  return { fotos: fotos };
+}
+
+function _eliminarFoto(id) {
+  var hoja  = _getHojaFotos();
+  var datos = hoja.getDataRange().getValues();
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][0]) === String(id)) {
+      hoja.deleteRow(i + 1);
+      return { success: true };
+    }
+  }
+  return { success: false, error: 'Foto no encontrada' };
 }
 
 // ─── Backup Manual ────────────────────────────────────────────────────────────

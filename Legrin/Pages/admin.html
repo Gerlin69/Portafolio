@@ -144,6 +144,60 @@
             <div id="registro-mensual-container" class="space-y-4"></div>
         </section>
 
+        <!-- ─── GESTIÓN DE FOTOS ──────────────────────────────────────────────── -->
+        <section class="mb-10 sm:mb-14">
+            <div class="mb-5 sm:mb-6">
+                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Contenido</p>
+                <h2 class="text-2xl sm:text-3xl font-bold">Gestión de Fotos</h2>
+                <p class="text-gray-400 text-sm mt-1">Sube fotos para la galería de cortes y los productos</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex gap-3 mb-6 flex-wrap">
+                <button onclick="cambiarTabFotos('galeria')" id="tab-btn-galeria"
+                    class="px-5 py-2.5 rounded-xl font-semibold text-sm transition gradient-amber text-black">
+                    <i class="fas fa-images mr-2"></i>Galería de Cortes
+                </button>
+                <button onclick="cambiarTabFotos('producto')" id="tab-btn-producto"
+                    class="px-5 py-2.5 rounded-xl font-semibold text-sm transition border border-gray-700 text-gray-300 hover:border-amber-400/50 hover:text-amber-400">
+                    <i class="fas fa-shopping-bag mr-2"></i>Productos
+                </button>
+            </div>
+
+            <!-- Panel galería -->
+            <div id="panel-tab-galeria">
+                <div class="card-premium rounded-2xl p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+                        <p class="text-sm text-gray-400">Fotos que aparecen en el carousel del sitio</p>
+                        <label class="btn-premium gradient-amber text-black font-bold py-2 px-4 rounded-xl text-sm cursor-pointer">
+                            <i class="fas fa-plus mr-2"></i>Subir fotos
+                            <input type="file" id="input-fotos-galeria" accept="image/*" multiple class="hidden"
+                                onchange="subirFotosGaleria(this.files); this.value='';">
+                        </label>
+                    </div>
+                    <div id="grid-fotos-galeria" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <p class="col-span-full text-center py-8 text-gray-500 text-sm">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>Cargando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel productos -->
+            <div id="panel-tab-producto" style="display:none">
+                <div class="card-premium rounded-2xl p-5 sm:p-6">
+                    <p class="text-sm text-gray-400 mb-5">Cambia la foto de cada producto</p>
+                    <div id="grid-fotos-productos" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Barra de progreso de subida -->
+            <div id="upload-progress" style="display:none"
+                class="mt-4 card-premium rounded-xl p-4 flex items-center gap-3 border border-amber-400/20">
+                <i class="fas fa-spinner fa-spin text-amber-400 flex-shrink-0"></i>
+                <span id="upload-progress-text" class="text-sm text-gray-300">Subiendo foto...</span>
+            </div>
+        </section>
+
     </main>
 </div>
 
@@ -287,6 +341,7 @@
         renderizarDiasNoLaborables([]);
         actualizarTodo();
         setInterval(actualizarTodo, 30000);
+        cargarFotosGaleriaAdmin();
     }
 
     async function actualizarTodo() {
@@ -929,6 +984,164 @@
         const hidden  = content.classList.toggle('hidden');
         if (icon) icon.style.transform = hidden ? '' : 'rotate(180deg)';
     }
+
+    // ─── Gestión de Fotos ─────────────────────────────────────────────────────
+    let _tabFotosActiva = 'galeria';
+
+    function cambiarTabFotos(tab) {
+        _tabFotosActiva = tab;
+        const tabs = ['galeria', 'producto'];
+        tabs.forEach(t => {
+            const btn   = document.getElementById(`tab-btn-${t}`);
+            const panel = document.getElementById(`panel-tab-${t}`);
+            const activo = t === tab;
+            panel.style.display = activo ? '' : 'none';
+            btn.className = activo
+                ? 'px-5 py-2.5 rounded-xl font-semibold text-sm transition gradient-amber text-black'
+                : 'px-5 py-2.5 rounded-xl font-semibold text-sm transition border border-gray-700 text-gray-300 hover:border-amber-400/50 hover:text-amber-400';
+        });
+        if (tab === 'galeria')  cargarFotosGaleriaAdmin();
+        if (tab === 'producto') cargarFotosProductosAdmin();
+    }
+
+    // Comprime imagen en canvas antes de subir (max 900px, JPEG 85%)
+    function _comprimirImagen(file) {
+        return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 900;
+                    let w = img.width, h = img.height;
+                    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve({ base64: canvas.toDataURL('image/jpeg', 0.85), mimeType: 'image/jpeg', nombre: file.name });
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function _enviarFoto(base64, mimeType, nombre, tipo, productoId) {
+        const res = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            credentials: 'omit',
+            body: JSON.stringify({ action: 'subirFoto', token: APPS_SCRIPT_TOKEN, base64, mimeType, nombre, tipo, productoId: productoId || '' })
+        });
+        return res.json();
+    }
+
+    async function subirFotosGaleria(files) {
+        if (!files || !files.length) return;
+        const prog = document.getElementById('upload-progress');
+        const txt  = document.getElementById('upload-progress-text');
+        prog.style.display = 'flex';
+
+        for (let i = 0; i < files.length; i++) {
+            txt.textContent = `Subiendo foto ${i + 1} de ${files.length}...`;
+            try {
+                const { base64, mimeType, nombre } = await _comprimirImagen(files[i]);
+                await _enviarFoto(base64, mimeType, nombre, 'galeria', '');
+            } catch (err) {
+                console.error('Error subiendo foto:', err);
+            }
+        }
+
+        prog.style.display = 'none';
+        cargarFotosGaleriaAdmin();
+    }
+
+    async function subirFotoProducto(file, productoId, inputEl) {
+        if (!file) return;
+        const prog = document.getElementById('upload-progress');
+        const txt  = document.getElementById('upload-progress-text');
+        prog.style.display = 'flex';
+        txt.textContent = 'Subiendo foto del producto...';
+
+        try {
+            const { base64, mimeType, nombre } = await _comprimirImagen(file);
+            const data = await _enviarFoto(base64, mimeType, nombre, 'producto', String(productoId));
+            if (data.success && data.url) {
+                const imgEl = document.getElementById(`prod-admin-img-${productoId}`);
+                if (imgEl) imgEl.src = data.url;
+            }
+        } catch (err) {
+            console.error('Error subiendo foto producto:', err);
+        }
+
+        prog.style.display = 'none';
+        if (inputEl) inputEl.value = '';
+    }
+
+    async function eliminarFotoAdmin(id, elCard) {
+        if (!confirm('¿Eliminar esta foto?')) return;
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                credentials: 'omit',
+                body: JSON.stringify({ action: 'eliminarFoto', token: APPS_SCRIPT_TOKEN, id })
+            });
+            if (elCard) elCard.remove();
+        } catch (err) {
+            console.error('Error eliminando foto:', err);
+        }
+    }
+
+    async function cargarFotosGaleriaAdmin() {
+        const grid = document.getElementById('grid-fotos-galeria');
+        grid.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Cargando...</p>';
+        try {
+            const res  = await fetch(`${APPS_SCRIPT_URL}?action=getFotos&tipo=galeria`, { credentials: 'omit' });
+            const data = await res.json();
+            if (!data.fotos || data.fotos.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500 text-sm"><i class="fas fa-image mr-2 opacity-40"></i>Sin fotos todavía. Sube la primera.</p>';
+                return;
+            }
+            grid.innerHTML = data.fotos.map(f => `
+                <div class="relative group rounded-xl overflow-hidden aspect-[3/4] bg-gray-900" id="foto-card-${esc(f.id)}">
+                    <img src="${esc(f.url)}" alt="Corte" class="w-full h-full object-cover">
+                    <button onclick="eliminarFotoAdmin('${esc(f.id)}', document.getElementById('foto-card-${esc(f.id)}'))"
+                        class="absolute top-1.5 right-1.5 w-7 h-7 bg-red-600/80 hover:bg-red-600 rounded-full text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>`).join('');
+        } catch {
+            grid.innerHTML = '<p class="col-span-full text-center py-8 text-red-400 text-sm">Error al cargar fotos.</p>';
+        }
+    }
+
+    async function cargarFotosProductosAdmin() {
+        const grid = document.getElementById('grid-fotos-productos');
+
+        let fotosPorId = {};
+        try {
+            const res  = await fetch(`${APPS_SCRIPT_URL}?action=getFotos&tipo=producto`, { credentials: 'omit' });
+            const data = await res.json();
+            if (data.fotos) data.fotos.forEach(f => { if (f.productoId) fotosPorId[f.productoId] = f.url; });
+        } catch {}
+
+        grid.innerHTML = products.map(p => {
+            const img = fotosPorId[String(p.id)] || p.image;
+            return `
+            <div class="flex items-center gap-4 p-4 card-premium rounded-xl">
+                <img id="prod-admin-img-${p.id}" src="${esc(img)}" alt="${esc(p.name)}"
+                    class="w-20 h-20 rounded-xl object-cover border border-gray-700 flex-shrink-0">
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-sm">${esc(p.name)}</p>
+                    <p class="text-gray-400 text-xs">${esc(p.price)}</p>
+                </div>
+                <label class="btn-premium gradient-amber text-black font-bold py-2 px-3 rounded-lg text-xs cursor-pointer flex-shrink-0">
+                    <i class="fas fa-camera mr-1"></i>Cambiar
+                    <input type="file" accept="image/*" class="hidden"
+                        onchange="subirFotoProducto(this.files[0], ${p.id}, this)">
+                </label>
+            </div>`;
+        }).join('');
+    }
+
 </script>
 </body>
 </html>

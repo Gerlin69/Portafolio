@@ -1,9 +1,18 @@
 
-function loadProducts() {
-    document.getElementById('productos-gallery').innerHTML = products.map(product => `
+async function loadProducts() {
+    let fotosPorId = {};
+    try {
+        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getFotos&tipo=producto`, { credentials: 'omit' });
+        const data = await res.json();
+        if (data.fotos) data.fotos.forEach(f => { if (f.productoId) fotosPorId[f.productoId] = f.url; });
+    } catch {}
+
+    document.getElementById('productos-gallery').innerHTML = products.map(product => {
+        const img = fotosPorId[String(product.id)] || product.image;
+        return `
         <div class="card-premium rounded-2xl overflow-hidden scroll-animate">
             <div class="relative h-64 overflow-hidden">
-                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy">
+                <img src="${img}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy" id="prod-img-main-${product.id}">
                 <div class="absolute top-4 right-4 badge-premium">${product.price}</div>
             </div>
             <div class="p-6">
@@ -13,8 +22,8 @@ function loadProducts() {
                     <i class="fas fa-shopping-bag mr-2"></i>Contactar
                 </button>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 // ─── Navegación ───────────────────────────────────────────────────────────────

@@ -20,14 +20,27 @@ const fotosCortes = [
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=600&fit=crop&sig=7'
 ];
 
+// ─── Cargar fotos desde Sheets (con fallback al array local) ─────────────────
+async function _cargarUrlsGaleria() {
+    try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=getFotos&tipo=galeria`, { credentials: 'omit' });
+        const data = await res.json();
+        if (data.fotos && data.fotos.length > 0) return data.fotos.map(f => f.url);
+    } catch {}
+    return null;
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
-function initWheelCarousel() {
+async function initWheelCarousel() {
     const container = document.getElementById('carouselWheel');
     if (!container) return;
 
-    wheelCarouselConfig.totalItems = fotosCortes.length;
+    const urlsSheets = await _cargarUrlsGaleria();
+    const urls = urlsSheets || fotosCortes;
 
-    fotosCortes.forEach((url, index) => {
+    wheelCarouselConfig.totalItems = urls.length;
+
+    urls.forEach((url, index) => {
         const item = document.createElement('div');
         item.className = 'carousel-wheel-item';
         item.id = `carousel-item-${index}`;
