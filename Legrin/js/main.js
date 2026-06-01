@@ -45,6 +45,11 @@ function contactForProduct(productName) {
 
 // Scroll animations manejadas por GSAP en animations.js
 
+// Devuelve la fecha local en formato YYYY-MM-DD (sin conversión UTC)
+function _fechaLocal(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     loadProducts();
@@ -57,9 +62,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (minutosActuales >= horarioDia.fin) {
         const manana = new Date(ahora);
         manana.setDate(manana.getDate() + 1);
-        fechaInicial = manana.toISOString().split('T')[0];
+        fechaInicial = _fechaLocal(manana);
     } else {
-        fechaInicial = ahora.toISOString().split('T')[0];
+        fechaInicial = _fechaLocal(ahora);
     }
     const fechaInput = document.getElementById('fecha');
     fechaInput.setAttribute('min', fechaInicial);

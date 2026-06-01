@@ -39,7 +39,7 @@ function cambiarEstadoBarbero(key, nuevoEstado, minutosAusencia = null) {
 
 // ─── Disponibilidad ───────────────────────────────────────────────────────────
 function obtenerBarberosDisponibles(fecha = null) {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = _fechaLocal(new Date());
     // Para fechas futuras todos los barberos están disponibles para reservar
     if (fecha && fecha > hoy) {
         return BARBEROS_CONFIG.map(b => b.nombre);
@@ -78,7 +78,7 @@ function actualizarSelectBarberos(fecha = null) {
     if (valorAnterior && disponibles.includes(valorAnterior)) {
         select.value = valorAnterior;
     } else if (valorAnterior) {
-        const hoy = new Date().toISOString().split('T')[0];
+        const hoy = _fechaLocal(new Date());
         if (!fecha || fecha <= hoy) {
             if (typeof mostrarNotificacion === 'function')
                 mostrarNotificacion('❌ Ese barbero está fuera de servicio. Por favor elige otro disponible.', 'error');
@@ -109,7 +109,7 @@ function horaFormateada(isoString) {
 function obtenerProximaCita(key) {
     const config = BARBEROS_CONFIG.find(b => b.key === key);
     if (!config) return null;
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = _fechaLocal(new Date());
     const ahora = new Date().toTimeString().slice(0, 5);
     const reservas = JSON.parse(localStorage.getItem('legrinReservas') || '[]');
     return reservas
@@ -120,13 +120,13 @@ function obtenerProximaCita(key) {
 function contarCitasHoy(key) {
     const config = BARBEROS_CONFIG.find(b => b.key === key);
     if (!config) return 0;
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = _fechaLocal(new Date());
     return JSON.parse(localStorage.getItem('legrinReservas') || '[]')
         .filter(r => r.barbero === config.nombre && r.fecha === hoy).length;
 }
 
 function obtenerCitasProximas(minutosAnticipacion = 90) {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = _fechaLocal(new Date());
     const ahora = new Date();
     const limite = new Date(ahora.getTime() + minutosAnticipacion * 60000);
     return JSON.parse(localStorage.getItem('legrinReservas') || '[]')
