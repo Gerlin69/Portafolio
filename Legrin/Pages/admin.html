@@ -345,8 +345,10 @@
     }
 
     async function actualizarTodo() {
-        await sincronizarEstadoDesdeSheets();
-        const solicitudes = await obtenerSolicitudesGoogleSheets();
+        const [_, solicitudes] = await Promise.all([
+            sincronizarEstadoDesdeSheets(),
+            obtenerSolicitudesGoogleSheets()
+        ]);
         renderizarCardsBarberos(solicitudes);
         renderizarRecordatorios(solicitudes);
         renderizarNoRealizados();
