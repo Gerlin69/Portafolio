@@ -457,8 +457,17 @@ function manejarRespuestaCliente(e) {
     } else if (estado.paso === 'esperando_motivo') {
       cache.remove(cacheKey);
       var barbero = estado.datos ? (estado.datos.barbero || 'tu barbero') : 'tu barbero';
+
+      // Cancelar la reserva y notificar al barbero
+      if (estado.datos) {
+        cancelarReservaPorCliente(estado.datos);
+        var telBarbero = BARBEROS_WHATSAPP_NUMEROS[barbero];
+        if (telBarbero) enviarCancelacionBarbero(telBarbero, estado.datos);
+      }
+
       respuesta =
         'Gracias por avisarnos. 📝\n\n' +
+        'Tu reserva ha sido *cancelada*.\n\n' +
         'Por favor comunícate directamente con *' + barbero + '* para coordinar la situación.\n\n' +
         '⚠️ *Política de devolución:*\n' +
         'Solo se considerará la devolución del adelanto ($15.000) en casos de *fuerza mayor* debidamente justificados:\n' +
@@ -644,6 +653,58 @@ function enviarNotificacionBarbero(telefonoBarbero, nombreCliente, datos) {
     '2️⃣ Revisa el comprobante de pago\n' +
     '3️⃣ Cobra los $10.000 restantes\n\n' +
     '✅ Si todo está OK, marca como Completado';
+  return enviarWhatsApp(telefonoBarbero, msg);
+}
+
+// ─── Cancelar reserva cuando el cliente avisa que no puede asistir ────────────
+function cancelarReservaPorCliente(datos) {
+  try {
+    var ss      = SpreadsheetApp.openById(SHEET_ID);
+    var hoja    = ss.getSheetByName('Solicitudes');
+    if (!hoja) return false;
+    var valores = hoja.getDataRange().getValues();
+    var headers = valores[0];
+    var tz      = Session.getScriptTimeZone();
+    var colEstadoPago = _buscarColumna(headers, 'EstadoPago');
+    var colEstado     = _buscarColumna(headers, 'Estado');
+
+    for (var i = 1; i < valores.length; i++) {
+      var fila        = valores[i];
+      var nombreFila  = String(fila[1] || '');
+      var barberoFila = String(fila[3] || '');
+      var fechaFila   = fila[4] instanceof Date
+        ? Utilities.formatDate(fila[4], tz, 'yyyy-MM-dd')
+        : String(fila[4] || '').substring(0, 10);
+      var horaFila    = fila[5] instanceof Date
+        ? Utilities.formatDate(fila[5], tz, 'HH:mm')
+        : String(fila[5] || '').substring(0, 5);
+
+      if (nombreFila === datos.nombre && barberoFila === datos.barbero &&
+          fechaFila === datos.fecha && horaFila === datos.hora) {
+        if (colEstadoPago >= 0) hoja.getRange(i + 1, colEstadoPago + 1).setValue('Cancelado');
+        if (colEstado     >= 0) hoja.getRange(i + 1, colEstado     + 1).setValue('Rechazada');
+        Logger.log('❌ Reserva cancelada por cliente: ' + datos.nombre + ' ' + datos.fecha + ' ' + datos.hora);
+        return true;
+      }
+    }
+  } catch(err) {
+    Logger.log('Error cancelarReservaPorCliente: ' + err.toString());
+  }
+  return false;
+}
+
+function enviarCancelacionBarbero(telefonoBarbero, datos) {
+  var msg =
+    '❌ *CITA CANCELADA* ✂️\n\n' +
+    'El cliente *' + datos.nombre + '* canceló su cita.\n\n' +
+    '📋 *HORARIO LIBERADO:*\n' +
+    '──────────────────────\n' +
+    '📅 Fecha: '   + datos.fecha                   + '\n' +
+    '⏰ Hora: '    + _formatearHora12h(datos.hora) + '\n' +
+    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n\n' +
+    '💡 *Ese horario quedó disponible.*\n' +
+    'Si hay algún cliente en la barbería que no pudo reservar por la web, puedes ofrecerle ese espacio.\n\n' +
+    'Legrin Barber 💈';
   return enviarWhatsApp(telefonoBarbero, msg);
 }
 
