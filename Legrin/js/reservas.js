@@ -190,9 +190,31 @@ function seleccionarHora(hora) {
     });
 }
 
-// Refresca los slots cada minuto si hoy está seleccionado, para que los horarios pasados se deshabiliten
+// Cada 30 seg: deshabilita visualmente los slots pasados sin llamada a la red
 setInterval(function() {
-    const fechaEl  = document.getElementById('fecha');
+    const fechaEl = document.getElementById('fecha');
+    if (!fechaEl || !fechaEl.value) return;
+    const ahora = new Date();
+    const hoy = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-${String(ahora.getDate()).padStart(2,'0')}`;
+    if (fechaEl.value !== hoy) return;
+    const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+    document.querySelectorAll('.horario-disponible, .horario-seleccionado').forEach(btn => {
+        const hora = btn.dataset.hora;
+        if (!hora) return;
+        const [hh, mm] = hora.split(':').map(Number);
+        if ((hh * 60 + mm) <= minutosAhora) {
+            btn.disabled = true;
+            btn.classList.remove('horario-disponible', 'horario-seleccionado');
+            btn.classList.add('horario-ocupado');
+            const horaInput = document.getElementById('hora');
+            if (horaInput && horaInput.value === hora) horaInput.value = '';
+        }
+    });
+}, 30000);
+
+// Cada 60 seg: refresco completo desde Sheets si hoy está seleccionado
+setInterval(function() {
+    const fechaEl   = document.getElementById('fecha');
     const barberoEl = document.getElementById('barbero');
     if (!fechaEl || !barberoEl || !fechaEl.value || !barberoEl.value) return;
     const ahora = new Date();
