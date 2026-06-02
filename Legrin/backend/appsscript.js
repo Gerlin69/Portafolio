@@ -69,6 +69,11 @@ function verificarRateLimit(telefono) {
 // ─── doPost ───────────────────────────────────────────────────────────────────
 function doPost(e) {
   try {
+    // Twilio inbound webhook (form URL-encoded, no JSON)
+    if (e.postData && e.postData.type === 'application/x-www-form-urlencoded') {
+      return manejarRespuestaCliente(e);
+    }
+
     var body = JSON.parse(e.postData.contents);
 
     if (body.action === 'subirFoto') {
@@ -404,6 +409,75 @@ function actualizarEstadoCorteEnSheet(data) {
   }
 }
 
+// ─── Manejo de respuestas entrantes de clientes (Twilio webhook) ─────────────
+function manejarRespuestaCliente(e) {
+  try {
+    // Parsear cuerpo URL-encoded que envía Twilio
+    var params = {};
+    (e.postData.contents || '').split('&').forEach(function(par) {
+      var kv = par.split('=');
+      if (kv.length >= 2) {
+        params[decodeURIComponent(kv[0])] = decodeURIComponent(kv.slice(1).join('=').replace(/\+/g, ' '));
+      }
+    });
+
+    var from     = String(params.From || '');               // "whatsapp:+573XXXXXXXX"
+    var body     = String(params.Body || '').trim();
+    var telefono = from.replace('whatsapp:', '');
+    var cacheKey = 'conv_' + telefono.replace(/[^0-9]/g, '');
+
+    var cache      = CacheService.getScriptCache();
+    var estadoJSON = cache.get(cacheKey);
+    var estado     = estadoJSON ? JSON.parse(estadoJSON) : null;
+    var respuesta  = '';
+    var bodyNorm   = body.toLowerCase()
+      .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u');
+
+    if (!estado) {
+      // Mensaje fuera de contexto — no responder para no generar ruido
+      return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
+    }
+
+    if (estado.paso === 'esperando_asistencia') {
+      var esS = ['si','s','sí','yes','claro','ok','dale','voy','ahi voy','ahí voy'].some(function(p){ return bodyNorm === p; });
+      var esN = ['no','nop','nope','no puedo','no voy'].some(function(p){ return bodyNorm === p || bodyNorm.startsWith('no '); });
+
+      if (esS) {
+        cache.remove(cacheKey);
+        respuesta =
+          '✅ ¡Perfecto! Te esperamos en *Legrin Barber* 💈\n\n' +
+          'Recuerda llegar 5-10 min antes y traer los *$10.000* del saldo.';
+      } else if (esN) {
+        cache.put(cacheKey, JSON.stringify({ paso: 'esperando_motivo', datos: estado.datos }), 3600);
+        respuesta = '😔 Lamentamos escuchar eso.\n\n¿Cuál es el motivo por el que no puedes asistir?';
+      } else {
+        respuesta = 'Por favor responde *SÍ* o *NO* para que podamos ayudarte.';
+      }
+
+    } else if (estado.paso === 'esperando_motivo') {
+      cache.remove(cacheKey);
+      var barbero = estado.datos ? (estado.datos.barbero || 'tu barbero') : 'tu barbero';
+      respuesta =
+        'Gracias por avisarnos. 📝\n\n' +
+        'Por favor comunícate directamente con *' + barbero + '* para coordinar la situación.\n\n' +
+        '⚠️ *Política de devolución:*\n' +
+        'Solo se considerará la devolución del adelanto ($15.000) en casos de *fuerza mayor* debidamente justificados:\n' +
+        '- Accidente\n' +
+        '- Problema de salud\n' +
+        '- Emergencia familiar u otro caso grave\n\n' +
+        'En otros casos, el adelanto *no es reembolsable*.\n\n' +
+        'Lamentamos los inconvenientes. 💈';
+    }
+
+    if (respuesta) enviarWhatsApp(telefono, respuesta);
+
+    return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
+  } catch(err) {
+    Logger.log('Error manejarRespuestaCliente: ' + err.toString());
+    return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
 // ─── Twilio: enviar WhatsApp ───────────────────────────────────────────────────
 function _getTwilioConfig() {
   var props = PropertiesService.getScriptProperties();
@@ -484,8 +558,18 @@ function enviarInstruccionesPago(telefono, datos) {
 }
 
 function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
+  // Guardar estado de conversación para procesar la respuesta del cliente
+  var cacheKey = 'conv_' + String(telefono).replace(/[^0-9]/g, '');
+  CacheService.getScriptCache().put(
+    cacheKey,
+    JSON.stringify({ paso: 'esperando_asistencia', datos: datos }),
+    7200 // 2 horas
+  );
+
   var hora12 = _formatearHora12h(datos.hora);
+  var pregunta = '\n\n💬 *¿Aún puedes asistir?*\nResponde: *SÍ* o *NO*';
   var msg;
+
   if (minutosRestantes >= 110) {
     msg = '⏰ *RECORDATORIO DE TU CITA* 💈\n\n' +
       '¡Hola ' + datos.nombre + '!\n\n' +
@@ -497,7 +581,8 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
       '⚠️ *IMPORTANTE:*\n' +
       '- Llega 5-10 minutos antes\n' +
       '- Ten listo: *$10.000 COP* para pagar en sitio\n' +
-      '- Si NO asistes, PIERDES los $15.000 pagados';
+      '- Si NO asistes, PIERDES los $15.000 pagados' +
+      pregunta;
   } else if (minutosRestantes >= 50) {
     msg = '🚨 *¡ÚLTIMA LLAMADA!* 🚨\n\n' +
       '¡Hola ' + datos.nombre + '!\n\n' +
@@ -505,7 +590,8 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
       '👤 Barbero: ' + datos.barbero + '\n' +
       '⏰ Hora: '    + hora12        + '\n\n' +
       'Si NO puedes asistir, AVISA AHORA.\n' +
-      'De lo contrario, *PERDERÁS tu dinero*.';
+      'De lo contrario, *PERDERÁS tu dinero*.' +
+      pregunta;
   } else {
     msg = '⏰ *FALTAN 20 MINUTOS* ⏰\n\n' +
       '¡Hola ' + datos.nombre + '!\n\n' +
@@ -513,7 +599,8 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
       '👤 Barbero: ' + datos.barbero + '\n' +
       '⏰ Hora: '    + hora12        + '\n\n' +
       'Apúrate para llegar a tiempo.\n' +
-      'No olvides los *$10.000* para pagar en sitio.';
+      'No olvides los *$10.000* para pagar en sitio.' +
+      pregunta;
   }
   return enviarWhatsApp(telefono, msg);
 }
