@@ -271,6 +271,15 @@ function confirmarPagoEnSheet(p) {
         hoja.getRange(i + 1, colEstadoPago + 1).setValue('Confirmado');
         if (colEstado >= 0) hoja.getRange(i + 1, colEstado + 1).setValue('Pendiente');
         Logger.log('✅ Pago confirmado: ' + p.nombre + ' ' + p.fecha + ' ' + p.hora);
+        // Notificar al barbero que tiene una reserva confirmada
+        var telefonoBarbero = BARBEROS_WHATSAPP_NUMEROS[barberoFila];
+        if (telefonoBarbero) {
+          var tipoCorte = String(fila[6] || '');
+          enviarConfirmacionReservaBarbero(telefonoBarbero, {
+            nombre: nombreFila, barbero: barberoFila,
+            fecha: fechaFila, hora: horaFila, tipoCorte: tipoCorte
+          });
+        }
         return { success: true };
       }
     }
@@ -517,6 +526,33 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
   return enviarWhatsApp(telefono, msg);
 }
 
+function enviarConfirmacionReservaBarbero(telefonoBarbero, datos) {
+  var msg =
+    '🎉 *NUEVA RESERVA CONFIRMADA* 💈\n\n' +
+    'El cliente *' + datos.nombre + '* pagó el adelanto y confirmó su cita.\n\n' +
+    '📋 *DETALLES:*\n' +
+    '──────────────────────\n' +
+    '👤 Cliente: '  + datos.nombre              + '\n' +
+    '📅 Fecha: '    + datos.fecha               + '\n' +
+    '⏰ Hora: '     + datos.hora                + '\n' +
+    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n\n' +
+    'El cliente llegará con *$10.000* para pagar el saldo en sitio.\n\n' +
+    'Legrin Barber 💈';
+  return enviarWhatsApp(telefonoBarbero, msg);
+}
+
+function enviarRecordatorioBarbero(telefonoBarbero, datos) {
+  var msg =
+    '⏰ *CITA EN 15 MINUTOS* ✂️\n\n' +
+    'Tu próxima cita comienza en *15 minutos*:\n\n' +
+    '👤 Cliente: '  + datos.nombre              + '\n' +
+    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n' +
+    '⏰ Hora: '     + datos.hora                + '\n\n' +
+    '💰 Recuerda cobrar *$10.000* en sitio.\n\n' +
+    'Legrin Barber 💈';
+  return enviarWhatsApp(telefonoBarbero, msg);
+}
+
 function enviarNotificacionBarbero(telefonoBarbero, nombreCliente, datos) {
   var msg =
     '✅ *CORTE REALIZADO* ✂️\n\n' +
@@ -618,6 +654,17 @@ function procesarEventosProgramados() {
         yaEnviados.push(tipoRecord);
         hoja.getRange(i + 1, colRecord + 1).setValue(yaEnviados.join(','));
         Logger.log('⏰ Recordatorio ' + tipoRecord + 'min → ' + nombre);
+      }
+
+      // Recordatorio al barbero 15 min antes de su cita
+      if (minsCita > 10 && minsCita <= 20 && !yaEnviados.includes('barber15')) {
+        var telefonoBarbero = BARBEROS_WHATSAPP_NUMEROS[barbero];
+        if (telefonoBarbero) {
+          enviarRecordatorioBarbero(telefonoBarbero, datosR);
+          yaEnviados.push('barber15');
+          hoja.getRange(i + 1, colRecord + 1).setValue(yaEnviados.join(','));
+          Logger.log('📲 Recordatorio barbero 15min → ' + barbero);
+        }
       }
     }
   } catch(e) {
