@@ -12,10 +12,10 @@ var BARBEROS_WHATSAPP_NUMEROS = {
 var NUMERO_COMPROBANTES = '+573102471637';
 
 var INFO_CUENTA_BANCARIA = {
-  banco:        '[NOMBRE DEL BANCO]',
-  tipoCuenta:   '[TIPO DE CUENTA]',
-  numeroCuenta: '[NÚMERO DE CUENTA]',
-  titular:      'Legrin Barber'
+  banco:        'Nequi',
+  tipoCuenta:   'Ahorros',
+  numeroCuenta: '3102471637',
+  titular:      'Andres Palacios'
 };
 
 var PRECIO_ADELANTO       = 15000;
