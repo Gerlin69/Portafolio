@@ -460,7 +460,7 @@ function enviarInstruccionesPago(telefono, datos) {
     '─────────────────────\n' +
     '👤 Barbero: ' + datos.barbero + '\n' +
     '📅 Fecha: '   + datos.fecha   + '\n' +
-    '⏰ Hora: '    + datos.hora    + '\n' +
+    '⏰ Hora: '    + _formatearHora12h(datos.hora) + '\n' +
     '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n\n' +
     '💰 *MONTO A PAGAR AHORA:* $15.000 COP\n\n' +
     '🏦 *DATOS PARA TRANSFERENCIA:*\n' +
@@ -484,6 +484,7 @@ function enviarInstruccionesPago(telefono, datos) {
 }
 
 function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
+  var hora12 = _formatearHora12h(datos.hora);
   var msg;
   if (minutosRestantes >= 110) {
     msg = '⏰ *RECORDATORIO DE TU CITA* 💈\n\n' +
@@ -491,28 +492,26 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
       'Tu cita en *Legrin Barber* es en *2 HORAS*\n\n' +
       '📋 *DETALLES:*\n' +
       '👤 Barbero: ' + datos.barbero + '\n' +
-      '⏰ Hora: '    + datos.hora    + '\n' +
+      '⏰ Hora: '    + hora12        + '\n' +
       '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n\n' +
       '⚠️ *IMPORTANTE:*\n' +
       '- Llega 5-10 minutos antes\n' +
       '- Ten listo: *$10.000 COP* para pagar en sitio\n' +
-      '- Si NO asistes, PIERDES los $15.000 pagados\n\n' +
-      '¿Confirmas tu asistencia? Responde: *SI* o *NO*';
+      '- Si NO asistes, PIERDES los $15.000 pagados';
   } else if (minutosRestantes >= 50) {
     msg = '🚨 *¡ÚLTIMA LLAMADA!* 🚨\n\n' +
       '¡Hola ' + datos.nombre + '!\n\n' +
       'Tu cita en *Legrin Barber* es en *1 HORA*\n\n' +
       '👤 Barbero: ' + datos.barbero + '\n' +
-      '⏰ Hora: '    + datos.hora    + '\n\n' +
+      '⏰ Hora: '    + hora12        + '\n\n' +
       'Si NO puedes asistir, AVISA AHORA.\n' +
-      'De lo contrario, *PERDERÁS tu dinero*.\n\n' +
-      'Responde: *VAYA* o *NO PUEDO*';
+      'De lo contrario, *PERDERÁS tu dinero*.';
   } else {
     msg = '⏰ *FALTAN 20 MINUTOS* ⏰\n\n' +
       '¡Hola ' + datos.nombre + '!\n\n' +
       '¡Tu cita en *Legrin Barber* está por comenzar!\n\n' +
       '👤 Barbero: ' + datos.barbero + '\n' +
-      '⏰ Hora: '    + datos.hora    + '\n\n' +
+      '⏰ Hora: '    + hora12        + '\n\n' +
       'Apúrate para llegar a tiempo.\n' +
       'No olvides los *$10.000* para pagar en sitio.';
   }
@@ -526,10 +525,10 @@ function enviarConfirmacionReservaBarbero(telefonoBarbero, datos) {
     'Está realizando el pago ahora mismo.\n\n' +
     '📋 *DETALLES:*\n' +
     '──────────────────────\n' +
-    '👤 Cliente: '  + datos.nombre              + '\n' +
-    '📅 Fecha: '    + datos.fecha               + '\n' +
-    '⏰ Hora: '     + datos.hora                + '\n' +
-    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n\n' +
+    '👤 Cliente: '  + datos.nombre                      + '\n' +
+    '📅 Fecha: '    + datos.fecha                       + '\n' +
+    '⏰ Hora: '     + _formatearHora12h(datos.hora)     + '\n' +
+    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte')      + '\n\n' +
     'Legrin Barber 💈';
   return enviarWhatsApp(telefonoBarbero, msg);
 }
@@ -538,9 +537,9 @@ function enviarRecordatorioBarbero(telefonoBarbero, datos) {
   var msg =
     '⏰ *CITA EN 15 MINUTOS* ✂️\n\n' +
     'Tu próxima cita comienza en *15 minutos*:\n\n' +
-    '👤 Cliente: '  + datos.nombre              + '\n' +
-    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n' +
-    '⏰ Hora: '     + datos.hora                + '\n\n' +
+    '👤 Cliente: '  + datos.nombre                      + '\n' +
+    '✂️ Servicio: ' + (datos.tipoCorte || 'Corte')      + '\n' +
+    '⏰ Hora: '     + _formatearHora12h(datos.hora)     + '\n\n' +
     '💰 Recuerda cobrar *$10.000* en sitio.\n\n' +
     'Legrin Barber 💈';
   return enviarWhatsApp(telefonoBarbero, msg);
@@ -663,6 +662,16 @@ function procesarEventosProgramados() {
   } catch(e) {
     Logger.log('❌ procesarEventosProgramados: ' + e.toString());
   }
+}
+
+// ─── Formatear hora 24h → 12h (ej: 18:35 → 6:35 PM) ─────────────────────────
+function _formatearHora12h(hora24) {
+  var parts = String(hora24 || '').split(':');
+  var h = parseInt(parts[0]) || 0;
+  var m = parts[1] || '00';
+  var periodo = h >= 12 ? 'PM' : 'AM';
+  var h12 = h % 12 || 12;
+  return h12 + ':' + m + ' ' + periodo;
 }
 
 // ─── Buscar columna por nombre (case-insensitive, sin espacios) ───────────────
