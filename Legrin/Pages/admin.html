@@ -1181,31 +1181,51 @@
                 body: JSON.stringify({ action: 'eliminarFoto', token: APPS_SCRIPT_TOKEN, id })
             });
             if (elCard) elCard.remove();
+            try {
+                const cached = JSON.parse(localStorage.getItem('legrinFotosGaleria') || '[]');
+                localStorage.setItem('legrinFotosGaleria', JSON.stringify(cached.filter(f => f.id !== id)));
+            } catch {}
         } catch (err) {
             console.error('Error eliminando foto:', err);
         }
     }
 
+    function _renderizarFotosGaleria(fotos) {
+        const grid = document.getElementById('grid-fotos-galeria');
+        if (!fotos || !fotos.length) {
+            grid.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500 text-sm"><i class="fas fa-image mr-2 opacity-40"></i>Sin fotos todavía. Sube la primera.</p>';
+            return;
+        }
+        grid.innerHTML = fotos.map(f => `
+            <div class="relative group rounded-xl overflow-hidden aspect-[3/4] bg-gray-900" id="foto-card-${esc(f.id)}">
+                <img src="${esc(f.url)}" alt="Corte" class="w-full h-full object-cover">
+                <button onclick="eliminarFotoAdmin('${esc(f.id)}', document.getElementById('foto-card-${esc(f.id)}'))"
+                    class="absolute top-1.5 right-1.5 w-7 h-7 bg-red-600/80 hover:bg-red-600 rounded-full text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>`).join('');
+    }
+
     async function cargarFotosGaleriaAdmin() {
         const grid = document.getElementById('grid-fotos-galeria');
-        grid.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Cargando...</p>';
+
+        // Mostrar caché inmediatamente si existe (carga instantánea)
+        const cached = localStorage.getItem('legrinFotosGaleria');
+        if (cached) {
+            try { _renderizarFotosGaleria(JSON.parse(cached)); } catch {}
+        } else {
+            grid.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Cargando...</p>';
+        }
+
+        // Luego actualiza en segundo plano
         try {
             const res  = await fetch(`${APPS_SCRIPT_URL}?action=getFotos&tipo=galeria`, { credentials: 'omit' });
             const data = await res.json();
-            if (!data.fotos || data.fotos.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500 text-sm"><i class="fas fa-image mr-2 opacity-40"></i>Sin fotos todavía. Sube la primera.</p>';
-                return;
-            }
-            grid.innerHTML = data.fotos.map(f => `
-                <div class="relative group rounded-xl overflow-hidden aspect-[3/4] bg-gray-900" id="foto-card-${esc(f.id)}">
-                    <img src="${esc(f.url)}" alt="Corte" class="w-full h-full object-cover">
-                    <button onclick="eliminarFotoAdmin('${esc(f.id)}', document.getElementById('foto-card-${esc(f.id)}'))"
-                        class="absolute top-1.5 right-1.5 w-7 h-7 bg-red-600/80 hover:bg-red-600 rounded-full text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>`).join('');
+            const fotos = data.fotos || [];
+            localStorage.setItem('legrinFotosGaleria', JSON.stringify(fotos));
+            _renderizarFotosGaleria(fotos);
         } catch {
-            grid.innerHTML = '<p class="col-span-full text-center py-8 text-red-400 text-sm">Error al cargar fotos.</p>';
+            if (!cached) grid.innerHTML = '<p class="col-span-full text-center py-8 text-red-400 text-sm">Error al cargar fotos.</p>';
         }
     }
 
