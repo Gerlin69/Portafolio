@@ -15,7 +15,15 @@
       "Bash(Select-Object FullName)",
       "Bash(xargs grep -l \"APPS_SCRIPT\\\\|Google Sheets\\\\|nuevaReserva\\\\|updateBarberStatus\")",
       "Bash(Remove-Item \"c:\\\\Users\\\\USUARIO\\\\Documents\\\\GitHub\\\\Portafolio\\\\Legrin\\\\admin.html\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(ls \"c:\\\\Users\\\\USUARIO\\\\.claude\\\\skills\\\\\" 2>/dev/null || echo \"No skills dir\")",
+      "Read(//c/Users/USUARIO/.claude/skills\" 2>/dev/**)",
+      "Bash(npx playwright *)",
+      "Bash(node -e \"require\\('playwright'\\)\")",
+      "Bash(node -e ' *)",
+      "Read(//c/Users/USUARIO/AppData/Local/Temp/**)",
+      "Bash(npm init *)",
+      "Bash(npm install *)"
     ]
   }
 }
