@@ -64,7 +64,13 @@ async function guardarEnGoogleSheets(nombre, telefono, barbero, fecha, hora, tip
 
 async function obtenerSolicitudesGoogleSheets() {
     try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?token=${APPS_SCRIPT_TOKEN}&_t=${Date.now()}`, { credentials: 'omit' });
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 12000);
+        const response = await fetch(`${APPS_SCRIPT_URL}?token=${APPS_SCRIPT_TOKEN}&_t=${Date.now()}`, {
+            credentials: 'omit',
+            signal: controller.signal
+        });
+        clearTimeout(tid);
         const data = await response.json();
         return Array.isArray(data) ? data : [];
     } catch {

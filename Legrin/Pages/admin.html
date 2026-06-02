@@ -339,22 +339,39 @@
     function iniciarAdmin() {
         renderizarCardsBarberos(null);
         renderizarDiasNoLaborables([]);
+        document.getElementById('recordatorios-lista').innerHTML = `
+            <div class="card-premium rounded-2xl p-8 text-center">
+                <i class="fas fa-spinner fa-spin text-xl text-amber-400 mb-3 block"></i>
+                <p class="text-gray-500 text-sm">Cargando citas...</p>
+            </div>`;
         actualizarTodo();
         setInterval(actualizarTodo, 30000);
         cargarFotosGaleriaAdmin();
     }
 
     async function actualizarTodo() {
-        const [_, solicitudes] = await Promise.all([
-            sincronizarEstadoDesdeSheets(),
-            obtenerSolicitudesGoogleSheets()
-        ]);
-        renderizarCardsBarberos(solicitudes);
-        renderizarRecordatorios(solicitudes);
-        renderizarNoRealizados();
-        renderizarDiasNoLaborables(solicitudes);
-        renderizarRegistroMensual(solicitudes);
-        _actualizarTimestamp();
+        const btn  = document.querySelector('button[onclick="actualizarTodo()"]');
+        const icon = btn?.querySelector('i');
+        if (icon) icon.className = 'fas fa-spinner fa-spin';
+        if (btn)  btn.disabled = true;
+        try {
+            const results    = await Promise.allSettled([
+                sincronizarEstadoDesdeSheets(),
+                obtenerSolicitudesGoogleSheets()
+            ]);
+            const solicitudes = results[1].status === 'fulfilled' ? (results[1].value || []) : [];
+            renderizarCardsBarberos(solicitudes);
+            renderizarRecordatorios(solicitudes);
+            renderizarNoRealizados();
+            renderizarDiasNoLaborables(solicitudes);
+            renderizarRegistroMensual(solicitudes);
+            _actualizarTimestamp();
+        } catch(err) {
+            console.error('actualizarTodo:', err);
+        } finally {
+            if (icon) icon.className = 'fas fa-rotate-right';
+            if (btn)  btn.disabled = false;
+        }
     }
 
     function _actualizarTimestamp() {
