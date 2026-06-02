@@ -378,8 +378,9 @@
             if (solicitudes) {
                 const _vc = new Set();
                 const citasHoy = solicitudes.filter(s => {
-                    const estadoSol = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
-                    if (String(s.Fecha || '').substring(0, 10) !== hoy || s.Barbero !== nombre || estadoSol === 'Rechazada') return false;
+                    const estadoSol  = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
+                    const estadoPago = s.EstadoPago || '';
+                    if (String(s.Fecha || '').substring(0, 10) !== hoy || s.Barbero !== nombre || estadoSol === 'Rechazada' || estadoPago === 'Cancelado') return false;
                     const k = _claveCorte(s); if (_vc.has(k)) return false; _vc.add(k); return true;
                 });
                 totalHoy = citasHoy.length;
@@ -505,6 +506,7 @@
             const tipoCorte = r['Tipo de corte'] || '';
             const waLink    = config ? `https://wa.me/${config.whatsapp}?text=${encodeURIComponent(_mensajeBarbero(r, config, tipoCorte))}` : null;
             const horaStr   = parsearHora(r.Hora);
+            const estadoPago = r.EstadoPago || '';
             let timeLabel = '', urgente = false, pasada = false;
             if (isToday) {
                 const [h, m] = horaStr.split(':').map(Number);
@@ -518,6 +520,22 @@
             const estadoCorte = cortes[_claveCorte(r)];
             const yaRealizado  = estadoCorte?.estado === 'Realizado';
 
+            // Badge de estado de pago
+            let pagoBadge = '';
+            if (estadoPago === 'Pago Pendiente') {
+                pagoBadge = `<span class="inline-flex items-center gap-1 text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 rounded-lg px-2 py-1">
+                    <i class="fas fa-clock text-xs"></i>Pago pendiente
+                </span>`;
+            } else if (estadoPago === 'Confirmado') {
+                pagoBadge = `<span class="inline-flex items-center gap-1 text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg px-2 py-1">
+                    <i class="fas fa-check-double text-xs"></i>Pago OK
+                </span>`;
+            } else if (estadoPago === 'Cancelado') {
+                pagoBadge = `<span class="inline-flex items-center gap-1 text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-2 py-1">
+                    <i class="fas fa-ban text-xs"></i>Cancelado
+                </span>`;
+            }
+
             let botonesRow;
             if (yaRealizado) {
                 botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 flex items-center gap-2">
@@ -527,17 +545,27 @@
                     <button onclick="deshacerMarcarCorte(${idx})" class="text-xs text-gray-600 hover:text-gray-400 transition underline py-2 px-1">deshacer</button>
                 </div>`;
             } else {
-                botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 grid grid-cols-2 gap-2">
-                    <button onclick="marcarCorteRealizado(${idx})"
+                const confirmarPagoBtn = estadoPago === 'Pago Pendiente'
+                    ? `<button onclick="confirmarPago(${idx})"
                         style="min-height:44px"
-                        class="w-full bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg text-sm font-semibold active:bg-green-500/30 transition flex items-center justify-center gap-1.5">
-                        <i class="fas fa-check"></i>Realizado
-                    </button>
-                    <button onclick="abrirModalNoRealizado(${idx})"
-                        style="min-height:44px"
-                        class="w-full bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm font-semibold active:bg-red-500/30 transition flex items-center justify-center gap-1.5">
-                        <i class="fas fa-times"></i>No se realizó
-                    </button>
+                        class="col-span-2 w-full bg-blue-500/10 border border-blue-500/30 text-blue-300 rounded-lg text-sm font-semibold active:bg-blue-500/20 transition flex items-center justify-center gap-1.5 mb-0">
+                        <i class="fas fa-check-double"></i>Confirmar Pago Recibido
+                    </button>`
+                    : '';
+                botonesRow = `<div class="mt-3 pt-3 border-t border-gray-800/60 space-y-2">
+                    ${confirmarPagoBtn}
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="marcarCorteRealizado(${idx})"
+                            style="min-height:44px"
+                            class="w-full bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg text-sm font-semibold active:bg-green-500/30 transition flex items-center justify-center gap-1.5">
+                            <i class="fas fa-check"></i>Realizado
+                        </button>
+                        <button onclick="abrirModalNoRealizado(${idx})"
+                            style="min-height:44px"
+                            class="w-full bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm font-semibold active:bg-red-500/30 transition flex items-center justify-center gap-1.5">
+                            <i class="fas fa-times"></i>No se realizó
+                        </button>
+                    </div>
                 </div>`;
             }
 
@@ -551,6 +579,7 @@
                         <div class="min-w-0">
                             <p class="font-semibold truncate">${esc(r.Nombre)}</p>
                             <p class="text-gray-400 text-sm truncate">${esc(r.Barbero)}${tipoCorte ? ' · ' + esc(tipoCorte) : ''}</p>
+                            ${pagoBadge ? `<div class="mt-1">${pagoBadge}</div>` : ''}
                         </div>
                     </div>
                     ${waLink
@@ -620,7 +649,51 @@
         cortes[_claveCorte(r)] = { estado: 'Realizado', motivo: '', timestamp: new Date().toISOString() };
         guardarEstadoCortes(cortes);
         _sincronizarEstadoCorte(r, 'Realizado', '');
+        _notificarBarberoWhatsApp(r);
         actualizarTodo();
+    }
+
+    async function _notificarBarberoWhatsApp(r) {
+        try {
+            const params = new URLSearchParams({
+                action:  'notificarBarbero',
+                token:   APPS_SCRIPT_TOKEN,
+                nombre:  r.Nombre  || '',
+                barbero: r.Barbero || '',
+                fecha:   String(r.Fecha || '').substring(0, 10),
+                hora:    parsearHora(r.Hora)
+            });
+            await fetch(`${APPS_SCRIPT_URL}?${params}`, { credentials: 'omit' });
+        } catch {}
+    }
+
+    async function confirmarPago(idx) {
+        const r = _solicitudesActuales[idx];
+        if (!r) return;
+        const btn = event?.target?.closest('button');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Confirmando...'; }
+        try {
+            const params = new URLSearchParams({
+                action:  'confirmarPago',
+                token:   APPS_SCRIPT_TOKEN,
+                nombre:  r.Nombre  || '',
+                barbero: r.Barbero || '',
+                fecha:   String(r.Fecha || '').substring(0, 10),
+                hora:    parsearHora(r.Hora)
+            });
+            const resp = await fetch(`${APPS_SCRIPT_URL}?${params}`, { credentials: 'omit' });
+            const data = await resp.json();
+            if (data.success) {
+                mostrarNotificacion('✅ Pago confirmado. Los recordatorios automáticos están activos.', 'success');
+                await actualizarTodo();
+            } else {
+                mostrarNotificacion('❌ ' + (data.error || 'No se pudo confirmar el pago'), 'error');
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-double mr-1"></i>Confirmar Pago Recibido'; }
+            }
+        } catch {
+            mostrarNotificacion('❌ Error de red al confirmar pago', 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-double mr-1"></i>Confirmar Pago Recibido'; }
+        }
     }
 
     function abrirModalNoRealizado(idx) {

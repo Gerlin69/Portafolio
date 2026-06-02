@@ -835,9 +835,92 @@
         </div>
     </section>
 
-    <!-- SCRIPTS: data → reservas → barberos → main → carousel → animations -->
+    <!-- ─── MODAL DE PAGO ────────────────────────────────────────────────────── -->
+    <div id="modal-pago" class="fixed inset-0 bg-black/85 z-50 items-center justify-center p-4"
+        style="display:none; backdrop-filter: blur(10px);">
+        <div class="card-premium rounded-2xl w-full max-w-md" style="animation: scaleIn 0.25s ease; max-height:90vh; overflow-y:auto;">
+
+            <!-- Header -->
+            <div class="gradient-amber rounded-t-2xl px-6 py-5 text-black">
+                <div class="flex items-center gap-3 mb-1">
+                    <i class="fas fa-lock text-xl"></i>
+                    <h3 class="text-xl font-black">Confirma tu Pago</h3>
+                </div>
+                <p class="text-sm font-semibold opacity-80">Para finalizar la reserva, realiza la transferencia</p>
+            </div>
+
+            <div class="p-6 space-y-5">
+
+                <!-- Cuenta regresiva -->
+                <div class="text-center bg-gray-900 rounded-xl p-4 border border-gray-700">
+                    <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Tiempo restante para pagar</p>
+                    <p id="mp-countdown" class="text-4xl font-black text-amber-400" style="font-variant-numeric: tabular-nums;">30:00</p>
+                    <p class="text-xs text-gray-500 mt-1">Si no pagas en este tiempo, la reserva se cancela</p>
+                </div>
+
+                <!-- Resumen de cita -->
+                <div class="bg-gray-900/60 rounded-xl p-4 border border-gray-800 text-sm">
+                    <p class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">📋 Tu Cita</p>
+                    <div class="space-y-1.5 text-gray-300">
+                        <div class="flex justify-between"><span class="text-gray-500">Nombre</span><span class="font-semibold" id="mp-nombre">—</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Barbero</span><span class="font-semibold" id="mp-barbero">—</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Fecha</span><span class="font-semibold" id="mp-fecha">—</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Hora</span><span class="font-semibold" id="mp-hora">—</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Servicio</span><span class="font-semibold" id="mp-servicio">—</span></div>
+                    </div>
+                </div>
+
+                <!-- Monto -->
+                <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center">
+                    <p class="text-gray-400 text-sm">Monto a pagar <strong>ahora</strong></p>
+                    <p class="text-3xl font-black text-amber-400">$15.000 COP</p>
+                    <p class="text-xs text-gray-500 mt-1">Saldo restante ($10.000) se paga en la barbería</p>
+                </div>
+
+                <!-- Datos bancarios -->
+                <div class="bg-gray-900/60 rounded-xl p-4 border border-gray-800 text-sm">
+                    <p class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">🏦 Datos para transferencia</p>
+                    <div class="space-y-1.5 text-gray-300">
+                        <div class="flex justify-between"><span class="text-gray-500">Banco</span><span class="font-semibold">[NOMBRE DEL BANCO]</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Tipo</span><span class="font-semibold">[TIPO DE CUENTA]</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Número</span><span class="font-semibold">[NÚMERO DE CUENTA]</span></div>
+                        <div class="flex justify-between"><span class="text-gray-500">Titular</span><span class="font-semibold">Legrin Barber</span></div>
+                    </div>
+                </div>
+
+                <!-- Instrucciones post-pago -->
+                <div class="bg-green-500/10 border border-green-500/20 rounded-xl p-4 text-sm text-gray-300">
+                    <p class="text-green-400 font-bold text-xs uppercase tracking-widest mb-2">📤 Después de pagar</p>
+                    <ol class="space-y-1 list-none">
+                        <li>1️⃣ Realiza la transferencia de $15.000</li>
+                        <li>2️⃣ Toma foto del comprobante</li>
+                        <li>3️⃣ Envíala a <strong class="text-white">+57 3102471637</strong> (Gringo)</li>
+                        <li>4️⃣ Incluye tu nombre en el mensaje</li>
+                    </ol>
+                </div>
+
+                <!-- Mensaje de expiración -->
+                <div id="mp-msg-expiracion" class="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-center" style="display:none;">
+                    <i class="fas fa-clock text-red-400 text-2xl mb-2 block"></i>
+                    <p class="text-red-400 font-bold text-sm">Tiempo agotado</p>
+                    <p class="text-gray-400 text-xs mt-1">Tu reserva fue cancelada automáticamente. Puedes crear una nueva.</p>
+                </div>
+
+                <!-- Botón -->
+                <button id="mp-btn-cerrar" onclick="cerrarModalPago()"
+                    class="w-full btn-premium gradient-amber text-black font-bold py-4 rounded-xl text-base">
+                    ✅ Entendido, voy a pagar
+                </button>
+
+                <p class="text-xs text-gray-500 text-center">¿Preguntas? <a href="https://wa.me/573044652515" target="_blank" class="text-amber-400 hover:underline">+57 3044652515 (Leider)</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS: data → reservas → pago → barberos → main → carousel → animations -->
     <script src="js/data.js"></script>
     <script src="js/reservas.js"></script>
+    <script src="js/pago.js"></script>
     <script src="js/barberos.js"></script>
     <script src="js/main.js"></script>
     <script src="js/carousel.js"></script>

@@ -1,10 +1,15 @@
 const BARBEROS_CONFIG = [
     { key: 'Leider',  nombre: 'Leider V.',          whatsapp: '573044652515' },
-    { key: 'Gringo',  nombre: 'Andres M. "Gringo"', whatsapp: '573222222222' },
+    { key: 'Gringo',  nombre: 'Andres M. "Gringo"', whatsapp: '573102471637' },
     { key: 'Dobby',   nombre: 'Freddy R "Dobby"',   whatsapp: '573233333333' },
-    { key: 'Tyga',  nombre: 'Felipe M. "Tyga"',   whatsapp: '57302' },
+    { key: 'Tyga',    nombre: 'Felipe M. "Tyga"',   whatsapp: '57302' },
     { key: 'Polo',    nombre: 'Juan Diaz "Polo"',   whatsapp: '573255555555' },
 ];
+
+const PRECIO_TOTAL          = 25000;
+const PRECIO_ADELANTO       = 15000;
+const PRECIO_SALDO_BARBERIA = 10000;
+const NUMERO_COMPROBANTES   = '573102471637';
 const BARBEROS = BARBEROS_CONFIG.map(b => b.nombre);
 const ADMIN_PIN = 'legrin1234';
 const HORARIOS_DIA = {

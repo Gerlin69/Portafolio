@@ -162,8 +162,9 @@ async function actualizarHorarios() {
             .filter(s => {
                 if (s.Barbero !== barbero) return false;
                 if (String(s.Fecha || '').substring(0, 10) !== fecha) return false;
-                const estado = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
-                return estado !== 'Rechazada';
+                const estado     = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
+                const estadoPago = s.EstadoPago || '';
+                return estado !== 'Rechazada' && estadoPago !== 'Cancelado';
             })
             .map(s => parsearHora(s.Hora))
     );
@@ -251,8 +252,9 @@ async function realizarReserva() {
         if (s.Barbero !== barbero) return false;
         if (String(s.Fecha || '').substring(0, 10) !== fecha) return false;
         if (parsearHora(s.Hora) !== hora) return false;
-        const estado = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
-        return estado !== 'Rechazada';
+        const estado     = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
+        const estadoPago = s.EstadoPago || '';
+        return estado !== 'Rechazada' && estadoPago !== 'Cancelado';
     });
 
     if (yaOcupado || !validarDisponibilidad(barbero, fecha, hora)) {
@@ -274,7 +276,13 @@ async function realizarReserva() {
         return;
     }
 
-    mostrarNotificacion('✅ ¡Reserva enviada! Los barberos ya pueden verla.', 'success');
+    // Mostrar modal de pago con instrucciones y cuenta regresiva
+    if (typeof mostrarModalPago === 'function') {
+        mostrarModalPago({ nombre, telefono, barbero, fecha, hora, tipoCorte });
+    } else {
+        mostrarNotificacion('✅ ¡Reserva enviada! Recibirás instrucciones de pago por WhatsApp.', 'success');
+    }
+
     document.getElementById('formReserva').reset();
     document.getElementById('horariosContainer').innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Selecciona primero barbero y fecha</p>';
     document.getElementById('hora').value = '';
