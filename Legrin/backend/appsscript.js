@@ -780,12 +780,9 @@ function procesarEventosProgramados() {
       var yaEnviados = recordEnv ? recordEnv.split(',').filter(Boolean) : [];
       var tipoRecord = null;
 
-      if (minsCita > 110 && minsCita <= 130 && !yaEnviados.includes('120')) tipoRecord = '120';
-      else if (minsCita > 90  && minsCita <= 110 && !yaEnviados.includes('100')) tipoRecord = '100';
-      else if (minsCita > 70  && minsCita <= 90  && !yaEnviados.includes('80'))  tipoRecord = '80';
+      if      (minsCita > 110 && minsCita <= 130 && !yaEnviados.includes('120')) tipoRecord = '120';
       else if (minsCita > 50  && minsCita <= 70  && !yaEnviados.includes('60'))  tipoRecord = '60';
-      else if (minsCita > 30  && minsCita <= 50  && !yaEnviados.includes('40'))  tipoRecord = '40';
-      else if (minsCita > 10  && minsCita <= 30  && !yaEnviados.includes('20'))  tipoRecord = '20';
+      else if (minsCita > 15  && minsCita <= 25  && !yaEnviados.includes('20'))  tipoRecord = '20';
 
       if (tipoRecord) {
         enviarRecordatorioCita(telefono, parseInt(tipoRecord), datosR);
