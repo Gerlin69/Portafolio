@@ -226,7 +226,7 @@ function guardarReservaGet(p) {
       ''                        // RecordatoriosEnviados
     ]);
 
-    // Enviar instrucciones de pago por WhatsApp al cliente
+    // Enviar instrucciones de pago al cliente y notificar al barbero simultáneamente
     var datosReserva = {
       nombre:    sanitizarCampo(p.nombre),
       barbero:   p.barbero,
@@ -235,6 +235,8 @@ function guardarReservaGet(p) {
       tipoCorte: p.tipoCorte || 'Corte'
     };
     enviarInstruccionesPago(p.telefono, datosReserva);
+    var telBarbero = BARBEROS_WHATSAPP_NUMEROS[p.barbero];
+    if (telBarbero) enviarConfirmacionReservaBarbero(telBarbero, datosReserva);
 
     return { success: true, id: nuevoID };
   } catch(err) {
@@ -271,15 +273,6 @@ function confirmarPagoEnSheet(p) {
         hoja.getRange(i + 1, colEstadoPago + 1).setValue('Confirmado');
         if (colEstado >= 0) hoja.getRange(i + 1, colEstado + 1).setValue('Pendiente');
         Logger.log('✅ Pago confirmado: ' + p.nombre + ' ' + p.fecha + ' ' + p.hora);
-        // Notificar al barbero que tiene una reserva confirmada
-        var telefonoBarbero = BARBEROS_WHATSAPP_NUMEROS[barberoFila];
-        if (telefonoBarbero) {
-          var tipoCorte = String(fila[6] || '');
-          enviarConfirmacionReservaBarbero(telefonoBarbero, {
-            nombre: nombreFila, barbero: barberoFila,
-            fecha: fechaFila, hora: horaFila, tipoCorte: tipoCorte
-          });
-        }
         return { success: true };
       }
     }
@@ -528,15 +521,15 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
 
 function enviarConfirmacionReservaBarbero(telefonoBarbero, datos) {
   var msg =
-    '🎉 *NUEVA RESERVA CONFIRMADA* 💈\n\n' +
-    'El cliente *' + datos.nombre + '* pagó el adelanto y confirmó su cita.\n\n' +
+    '📅 *NUEVA RESERVA* 💈\n\n' +
+    'El cliente *' + datos.nombre + '* acaba de reservar una cita.\n' +
+    'Está realizando el pago ahora mismo.\n\n' +
     '📋 *DETALLES:*\n' +
     '──────────────────────\n' +
     '👤 Cliente: '  + datos.nombre              + '\n' +
     '📅 Fecha: '    + datos.fecha               + '\n' +
     '⏰ Hora: '     + datos.hora                + '\n' +
     '✂️ Servicio: ' + (datos.tipoCorte || 'Corte') + '\n\n' +
-    'El cliente llegará con *$10.000* para pagar el saldo en sitio.\n\n' +
     'Legrin Barber 💈';
   return enviarWhatsApp(telefonoBarbero, msg);
 }
