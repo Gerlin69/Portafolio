@@ -559,7 +559,7 @@ function enviarInstruccionesPago(telefono, datos) {
 
 function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
   // Guardar estado de conversación para procesar la respuesta del cliente
-  var cacheKey = 'conv_' + String(telefono).replace(/[^0-9]/g, '');
+  var cacheKey = 'conv_' + _formatearNumeroWA(telefono).replace(/[^0-9]/g, '');
   CacheService.getScriptCache().put(
     cacheKey,
     JSON.stringify({ paso: 'esperando_asistencia', datos: datos }),
