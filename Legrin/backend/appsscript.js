@@ -70,7 +70,7 @@ function verificarRateLimit(telefono) {
 function doPost(e) {
   try {
     // Twilio inbound webhook (form URL-encoded, no JSON)
-    if (e.postData && e.postData.type === 'application/x-www-form-urlencoded') {
+    if (e.postData && e.postData.type && e.postData.type.indexOf('application/x-www-form-urlencoded') >= 0) {
       return manejarRespuestaCliente(e);
     }
 
@@ -588,9 +588,7 @@ function enviarRecordatorioCita(telefono, minutosRestantes, datos) {
       '¡Hola ' + datos.nombre + '!\n\n' +
       'Tu cita en *Legrin Barber* es en *1 HORA*\n\n' +
       '👤 Barbero: ' + datos.barbero + '\n' +
-      '⏰ Hora: '    + hora12        + '\n\n' +
-      'Si NO puedes asistir, AVISA AHORA.\n' +
-      'De lo contrario, *PERDERÁS tu dinero*.' +
+      '⏰ Hora: '    + hora12        +
       pregunta;
   } else {
     msg = '⏰ *FALTAN 20 MINUTOS* ⏰\n\n' +
