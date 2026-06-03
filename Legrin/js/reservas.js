@@ -86,12 +86,12 @@ async function verificarEstadoReserva(nombre, barbero, fecha, hora, tipoCorte) {
 
     if (!solicitud) return 'pendiente';
 
-    if (solicitud.Estado === 'Aprobada') {
+    if (solicitud.Estado === 'Aprobado' || solicitud.Estado === 'Aprobada') {
         agregarReservaConfirmada(nombre, barbero, fecha, hora, tipoCorte);
         mostrarNotificacion('✅ ¡Tu reserva fue CONFIRMADA! El barbero confirmó tu cita.', 'success');
         return 'aprobada';
     }
-    if (solicitud.Estado === 'Rechazada') {
+    if (solicitud.Estado === 'Rechazado' || solicitud.Estado === 'Rechazada') {
         mostrarNotificacion(`❌ Tu reserva fue rechazada. Motivo: ${solicitud['Motivo Rechazo'] || 'Sin especificar'}`, 'error');
         return 'rechazada';
     }
@@ -170,7 +170,7 @@ async function actualizarHorarios() {
                 if (String(s.Fecha || '').substring(0, 10) !== fecha) return false;
                 const estado     = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
                 const estadoPago = s.EstadoPago || '';
-                return estado !== 'Rechazada' && estadoPago !== 'Cancelado';
+                return estado !== 'Rechazado' && estado !== 'Rechazada' && estadoPago !== 'Cancelado';
             })
             .map(s => parsearHora(s.Hora))
     );

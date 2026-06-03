@@ -402,7 +402,7 @@
                 const citasHoy = solicitudes.filter(s => {
                     const estadoSol  = s['Estado (Pendiente/Aprobado/Rechazado)'] || s.Estado || 'Pendiente';
                     const estadoPago = s.EstadoPago || '';
-                    if (String(s.Fecha || '').substring(0, 10) !== hoy || s.Barbero !== nombre || estadoSol === 'Rechazada' || estadoPago === 'Cancelado') return false;
+                    if (String(s.Fecha || '').substring(0, 10) !== hoy || s.Barbero !== nombre || (estadoSol === 'Rechazado' || estadoSol === 'Rechazada') || estadoPago === 'Cancelado') return false;
                     const k = _claveCorte(s); if (_vc.has(k)) return false; _vc.add(k); return true;
                 });
                 totalHoy = citasHoy.length;

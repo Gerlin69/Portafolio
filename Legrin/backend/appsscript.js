@@ -682,7 +682,7 @@ function cancelarReservaPorCliente(datos) {
       if (nombreFila === datos.nombre && barberoFila === datos.barbero &&
           fechaFila === datos.fecha && horaFila === datos.hora) {
         if (colEstadoPago >= 0) hoja.getRange(i + 1, colEstadoPago + 1).setValue('Cancelado');
-        if (colEstado     >= 0) hoja.getRange(i + 1, colEstado     + 1).setValue('Rechazada');
+        if (colEstado     >= 0) hoja.getRange(i + 1, colEstado     + 1).setValue('Rechazado');
         Logger.log('❌ Reserva cancelada por cliente: ' + datos.nombre + ' ' + datos.fecha + ' ' + datos.hora);
         return true;
       }
@@ -755,7 +755,7 @@ function procesarEventosProgramados() {
         var fechaExp = expiracion instanceof Date ? expiracion : new Date(expiracion);
         if (!isNaN(fechaExp.getTime()) && ahora > fechaExp) {
           hoja.getRange(i + 1, colEstadoPago + 1).setValue('Cancelado');
-          if (colEstado >= 0) hoja.getRange(i + 1, colEstado + 1).setValue('Rechazada');
+          if (colEstado >= 0) hoja.getRange(i + 1, colEstado + 1).setValue('Rechazado');
           enviarWhatsApp(telefono,
             '⏰ *RESERVA CANCELADA* ❌\n\n' +
             '¡Hola ' + nombre + '!\n\n' +
