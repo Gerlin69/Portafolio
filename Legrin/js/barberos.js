@@ -1,6 +1,10 @@
 // ─── Estado de Barberos ───────────────────────────────────────────────────────
 const ESTADO_KEY = 'legrinEstadoBarberos';
 
+function _fechaLocal(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function _inicializarEstado() {
     if (localStorage.getItem(ESTADO_KEY)) return;
     const estado = {};
