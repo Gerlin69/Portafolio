@@ -337,8 +337,12 @@
 
     // ─── Inicialización ───────────────────────────────────────────────────────
     function iniciarAdmin() {
-        renderizarCardsBarberos(null);
-        renderizarDiasNoLaborables([]);
+        try { renderizarCardsBarberos(null); } catch(e) {
+            console.error('renderizarCardsBarberos(null):', e);
+            document.getElementById('barberos-grid').innerHTML =
+                `<p class="text-red-400 text-sm col-span-full">Error al cargar barberos: ${e.message}</p>`;
+        }
+        try { renderizarDiasNoLaborables([]); } catch(e) { console.error('renderizarDiasNoLaborables:', e); }
         document.getElementById('recordatorios-lista').innerHTML = `
             <div class="card-premium rounded-2xl p-8 text-center">
                 <i class="fas fa-spinner fa-spin text-xl text-amber-400 mb-3 block"></i>
