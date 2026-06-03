@@ -161,7 +161,10 @@ async function _sincronizarASheets(key, datos) {
 
 async function sincronizarEstadoDesdeSheets() {
     try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=getBarberStatus`, { credentials: 'omit' });
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 10000);
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=getBarberStatus`, { credentials: 'omit', signal: controller.signal });
+        clearTimeout(tid);
         const data = await res.json();
         if (data && data.barberos && typeof data.barberos === 'object') {
             guardarEstadoBarberos(data.barberos);

@@ -355,11 +355,10 @@
         if (icon) icon.className = 'fas fa-spinner fa-spin';
         if (btn)  btn.disabled = true;
         try {
-            const results    = await Promise.allSettled([
-                sincronizarEstadoDesdeSheets(),
-                obtenerSolicitudesGoogleSheets()
-            ]);
-            const solicitudes = results[1].status === 'fulfilled' ? (results[1].value || []) : [];
+            // Estado del barbero se sincroniza en segundo plano (solo actualiza localStorage)
+            sincronizarEstadoDesdeSheets().catch(() => false);
+            // Las citas se esperan para renderizar
+            const solicitudes = await obtenerSolicitudesGoogleSheets();
             renderizarCardsBarberos(solicitudes);
             renderizarRecordatorios(solicitudes);
             renderizarNoRealizados();
