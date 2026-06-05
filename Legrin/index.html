@@ -716,60 +716,44 @@
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">
                     <span class="gradient-text">Lo que Dicen Nuestros Clientes</span>
                 </h2>
+                <p id="reseñas-stats" class="text-gray-400 text-sm mt-2"></p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
+            <div id="reseñas-grid" class="grid md:grid-cols-3 gap-8">
                 <div class="card-premium rounded-2xl p-8 scroll-animate">
                     <div class="flex gap-1 mb-4">
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i><i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i><i class="fas fa-star text-amber-400"></i>
                         <i class="fas fa-star text-amber-400"></i>
                     </div>
                     <p class="text-gray-300 mb-6">"Mejor barbería donde he ido. Los detalles, la atención y el ambiente son impecables. Definitivamente volveré."</p>
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-gray-700"></div>
-                        <div>
-                            <p class="font-bold text-sm">Carlos M.</p>
-                            <p class="text-gray-400 text-xs">Cliente Regular</p>
-                        </div>
+                        <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center"><i class="fas fa-user text-gray-500"></i></div>
+                        <div><p class="font-bold text-sm">Carlos M.</p><p class="text-gray-400 text-xs">Cliente Regular</p></div>
                     </div>
                 </div>
-
                 <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.1s;">
                     <div class="flex gap-1 mb-4">
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i><i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i><i class="fas fa-star text-amber-400"></i>
                         <i class="fas fa-star text-amber-400"></i>
                     </div>
-                    <p class="text-gray-300 mb-6">"Siempre que voy me dan muy buena atención, el espacio y ambiente son chéveres, cómodos para el cliente; además de que detallan muy bien los cortes"</p>
+                    <p class="text-gray-300 mb-6">"Siempre que voy me dan muy buena atención. El ambiente es chévere y detallan muy bien los cortes."</p>
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-gray-700"></div>
-                        <div>
-                            <p class="font-bold text-sm">Gerlin Perea</p>
-                            <p class="text-gray-400 text-xs">Cliente Regular</p>
-                        </div>
+                        <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center"><i class="fas fa-user text-gray-500"></i></div>
+                        <div><p class="font-bold text-sm">Gerlin P.</p><p class="text-gray-400 text-xs">Cliente Regular</p></div>
                     </div>
                 </div>
-
                 <div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay: 0.2s;">
                     <div class="flex gap-1 mb-4">
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
-                        <i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i><i class="fas fa-star text-amber-400"></i>
+                        <i class="fas fa-star text-amber-400"></i><i class="fas fa-star text-amber-400"></i>
                         <i class="fas fa-star text-amber-400"></i>
                     </div>
                     <p class="text-gray-300 mb-6">"No solo cortan cabello, crean una experiencia. Cada detalle está pensado. Altamente recomendado."</p>
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-gray-700"></div>
-                        <div>
-                            <p class="font-bold text-sm">Juan P.</p>
-                            <p class="text-gray-400 text-xs">Ejecutivo</p>
-                        </div>
+                        <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center"><i class="fas fa-user text-gray-500"></i></div>
+                        <div><p class="font-bold text-sm">Juan P.</p><p class="text-gray-400 text-xs">Ejecutivo</p></div>
                     </div>
                 </div>
             </div>
@@ -933,6 +917,41 @@
                 String(hoy.getDate()).padStart(2, '0');
             var fechaInput = document.getElementById('fecha');
             if (fechaInput) fechaInput.min = min;
+        })();
+    </script>
+    <script>
+        (async function cargarReseñas() {
+            try {
+                const res     = await fetch(`${APPS_SCRIPT_URL}?action=getReseñas`);
+                const reseñas = await res.json();
+                if (!Array.isArray(reseñas) || reseñas.length < 3) return;
+
+                const promedio = (reseñas.reduce((s, r) => s + r.calificacion, 0) / reseñas.length).toFixed(1);
+                const statsEl  = document.getElementById('reseñas-stats');
+                if (statsEl) statsEl.textContent = `${reseñas.length} reseñas verificadas · Promedio: ${promedio} ⭐`;
+
+                const recientes = reseñas.slice(-6).reverse();
+                const grid = document.getElementById('reseñas-grid');
+                if (!grid) return;
+                grid.innerHTML = recientes.map((r, i) => {
+                    const estrellas = Array.from({ length: 5 }, (_, j) =>
+                        `<i class="fas fa-star ${j < r.calificacion ? 'text-amber-400' : 'text-gray-700'}"></i>`
+                    ).join('');
+                    const fecha = r.fecha ? new Date(r.fecha + 'T00:00:00').toLocaleDateString('es-CO', { month: 'short', year: 'numeric' }) : '';
+                    return `<div class="card-premium rounded-2xl p-8 scroll-animate" style="animation-delay:${i * 0.1}s;">
+                        <div class="flex gap-1 mb-5">${estrellas}</div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user text-amber-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm">${r.nombre}</p>
+                                <p class="text-gray-400 text-xs">${r.barbero}${fecha ? ' · ' + fecha : ''}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) { /* mantiene las tarjetas estáticas */ }
         })();
     </script>
 

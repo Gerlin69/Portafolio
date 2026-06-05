@@ -144,6 +144,22 @@
             <div id="registro-mensual-container" class="space-y-4"></div>
         </section>
 
+        <!-- ─── RESEÑAS ──────────────────────────────────────────────────────── -->
+        <section class="mb-10 sm:mb-14">
+            <div class="mb-5 sm:mb-6">
+                <p class="text-amber-400 text-xs font-bold tracking-widest uppercase mb-1">Clientes</p>
+                <h2 class="text-2xl sm:text-3xl font-bold">Reseñas</h2>
+                <p class="text-gray-400 text-sm mt-1">Calificaciones recibidas por WhatsApp</p>
+            </div>
+            <div id="reseñas-admin-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4"></div>
+            <div id="reseñas-admin-lista" class="space-y-3">
+                <div class="card-premium rounded-2xl p-6 text-center">
+                    <i class="fas fa-spinner fa-spin text-amber-400 mb-2 block"></i>
+                    <p class="text-gray-500 text-sm">Cargando reseñas...</p>
+                </div>
+            </div>
+        </section>
+
         <!-- ─── GESTIÓN DE FOTOS ──────────────────────────────────────────────── -->
         <section class="mb-10 sm:mb-14">
             <div class="mb-5 sm:mb-6">
@@ -350,6 +366,7 @@
             </div>`;
         actualizarTodo();
         setInterval(actualizarTodo, 30000);
+        cargarReseñasAdmin();
         cargarFotosGaleriaAdmin();
     }
 
@@ -1224,6 +1241,56 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>`).join('');
+    }
+
+    // ─── Reseñas ─────────────────────────────────────────────────────────────
+    async function cargarReseñasAdmin() {
+        const lista  = document.getElementById('reseñas-admin-lista');
+        const stats  = document.getElementById('reseñas-admin-stats');
+        if (!lista) return;
+        try {
+            const res     = await fetch(`${APPS_SCRIPT_URL}?action=getReseñas`);
+            const reseñas = await res.json();
+            if (!Array.isArray(reseñas) || !reseñas.length) {
+                lista.innerHTML = `<div class="card-premium rounded-2xl p-8 text-center">
+                    <i class="fas fa-star text-3xl text-gray-700 mb-3 block"></i>
+                    <p class="text-gray-500 text-sm">Aún no hay reseñas. Se enviarán automáticamente por WhatsApp cuando un corte sea marcado como Realizado.</p>
+                </div>`;
+                return;
+            }
+            const promedio = (reseñas.reduce((s, r) => s + r.calificacion, 0) / reseñas.length).toFixed(1);
+            const dist = [5,4,3,2,1].map(n => ({ n, count: reseñas.filter(r => r.calificacion === n).length }));
+            if (stats) stats.innerHTML = `
+                <div class="card-premium rounded-2xl p-4 text-center">
+                    <p class="text-3xl font-black text-amber-400">${promedio}</p>
+                    <p class="text-gray-400 text-xs mt-1">Promedio general</p>
+                </div>
+                <div class="card-premium rounded-2xl p-4 text-center">
+                    <p class="text-3xl font-black text-amber-400">${reseñas.length}</p>
+                    <p class="text-gray-400 text-xs mt-1">Total reseñas</p>
+                </div>
+                ${dist.map(d => `<div class="card-premium rounded-2xl p-4 text-center">
+                    <p class="text-xl font-black text-amber-400">${d.count}</p>
+                    <p class="text-gray-400 text-xs mt-1">${'⭐'.repeat(d.n)}</p>
+                </div>`).slice(0,2).join('')}`;
+            lista.innerHTML = reseñas.slice().reverse().map(r => {
+                const estrellas = Array.from({length:5},(_,j)=>`<i class="fas fa-star text-xs ${j<r.calificacion?'text-amber-400':'text-gray-700'}"></i>`).join('');
+                return `<div class="card-premium rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user text-amber-400 text-xs"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-sm truncate">${r.nombre}</p>
+                            <p class="text-gray-400 text-xs">${r.barbero}${r.fecha?' · '+r.fecha:''}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-0.5 flex-shrink-0">${estrellas}</div>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            lista.innerHTML = `<p class="text-red-400 text-sm p-4">Error al cargar reseñas: ${e.message}</p>`;
+        }
     }
 
     async function cargarFotosGaleriaAdmin() {

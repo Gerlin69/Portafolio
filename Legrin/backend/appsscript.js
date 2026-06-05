@@ -134,6 +134,11 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (e.parameter.action === 'getReseñas') {
+      return ContentService.createTextOutput(JSON.stringify(obtenerReseñas_()))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (e.parameter.action === 'nuevaReserva') {
       return ContentService.createTextOutput(JSON.stringify(guardarReservaGet(e.parameter)))
         .setMimeType(ContentService.MimeType.JSON);
@@ -362,11 +367,12 @@ function actualizarEstadoCorteEnSheet(data) {
   var headers = valores[0];
   var nuevoEstado = data.estado === 'Realizado' ? 'Aprobado' : 'Rechazado';
 
-  var colEstado = -1, colMotivo = -1;
+  var colEstado = -1, colMotivo = -1, colTelefono = -1;
   for (var c = 0; c < headers.length; c++) {
     var h = String(headers[c]).toLowerCase();
-    if (h.indexOf('estado') >= 0 && colEstado < 0) colEstado = c + 1;
-    if (h.indexOf('motivo') >= 0 && colMotivo < 0) colMotivo = c + 1;
+    if (h.indexOf('estado') >= 0 && colEstado < 0)    colEstado   = c + 1;
+    if (h.indexOf('motivo') >= 0 && colMotivo < 0)    colMotivo   = c + 1;
+    if (h === 'telefono' || h === 'teléfono')          colTelefono = c;
   }
   if (colEstado < 0) return;
 
@@ -383,6 +389,8 @@ function actualizarEstadoCorteEnSheet(data) {
       }
       hoja.getRange(rowNum, colEstado).setValue(nuevoEstado);
       if (colMotivo > 0 && data.motivo) hoja.getRange(rowNum, colMotivo).setValue(data.motivo);
+      if (nuevoEstado === 'Aprobado' && colTelefono >= 0)
+        _enviarSolicitudCalificacion_(data.nombre, data.barbero, data.fecha, filaVerif[colTelefono]);
       return;
     }
   }
@@ -404,6 +412,8 @@ function actualizarEstadoCorteEnSheet(data) {
         fechaFila === data.fecha && horaFila === data.hora) {
       hoja.getRange(i + 1, colEstado).setValue(nuevoEstado);
       if (colMotivo > 0 && data.motivo) hoja.getRange(i + 1, colMotivo).setValue(data.motivo);
+      if (nuevoEstado === 'Aprobado' && colTelefono >= 0)
+        _enviarSolicitudCalificacion_(data.nombre, data.barbero, data.fecha, fila[colTelefono]);
       return;
     }
   }
@@ -452,6 +462,21 @@ function manejarRespuestaCliente(e) {
         respuesta = '😔 Lamentamos escuchar eso.\n\n¿Cuál es el motivo por el que no puedes asistir?';
       } else {
         respuesta = 'Por favor responde *SÍ* o *NO* para que podamos ayudarte.';
+      }
+
+    } else if (estado.paso === 'esperando_calificacion') {
+      var calNum = parseInt(body);
+      if (!isNaN(calNum) && calNum >= 1 && calNum <= 5) {
+        cache.remove(cacheKey);
+        guardarReseña_(telefono, estado.datos, calNum);
+        var estrellas = '';
+        for (var s = 0; s < calNum; s++) estrellas += '⭐';
+        respuesta =
+          estrellas + ' ¡Gracias por tu calificación!\n\n' +
+          'Tu opinión nos ayuda a seguir mejorando. 💈\n\n' +
+          '¡Te esperamos pronto en *Legrin Barber*!';
+      } else {
+        respuesta = 'Por favor responde con un número del *1 al 5* para calificar tu experiencia. ⭐';
       }
 
     } else if (estado.paso === 'esperando_motivo') {
@@ -815,6 +840,62 @@ function _formatearHora12h(hora24) {
   var periodo = h >= 12 ? 'PM' : 'AM';
   var h12 = h % 12 || 12;
   return h12 + ':' + m + ' ' + periodo;
+}
+
+// ─── Reseñas ──────────────────────────────────────────────────────────────────
+function _getHojaReseñas() {
+  var ss   = SpreadsheetApp.openById(SHEET_ID);
+  var hoja = ss.getSheetByName('Reseñas');
+  if (!hoja) {
+    hoja = ss.insertSheet('Reseñas');
+    hoja.appendRow(['Timestamp', 'Nombre', 'Barbero', 'Calificacion', 'Fecha']);
+  }
+  return hoja;
+}
+
+function guardarReseña_(telefono, datos, calificacion) {
+  try {
+    _getHojaReseñas().appendRow([
+      new Date().toLocaleString(),
+      datos.nombre  || '',
+      datos.barbero || '',
+      calificacion,
+      datos.fecha   || ''
+    ]);
+  } catch(err) { Logger.log('Error guardarReseña_: ' + err.toString()); }
+}
+
+function obtenerReseñas_() {
+  try {
+    var datos = _getHojaReseñas().getDataRange().getValues();
+    if (datos.length <= 1) return [];
+    return datos.slice(1).map(function(row) {
+      return {
+        timestamp:    String(row[0] || ''),
+        nombre:       String(row[1] || ''),
+        barbero:      String(row[2] || ''),
+        calificacion: Number(row[3]) || 0,
+        fecha:        String(row[4] || '').substring(0, 10)
+      };
+    }).filter(function(r) { return r.calificacion >= 1 && r.calificacion <= 5; });
+  } catch(err) { Logger.log('Error obtenerReseñas_: ' + err.toString()); return []; }
+}
+
+function _enviarSolicitudCalificacion_(nombre, barbero, fecha, telefono) {
+  try {
+    var tel = String(telefono || '').trim();
+    if (!tel) return;
+    var cacheKey = 'conv_' + tel.replace(/[^0-9]/g, '');
+    CacheService.getScriptCache().put(cacheKey, JSON.stringify({
+      paso: 'esperando_calificacion',
+      datos: { nombre: nombre, barbero: barbero, fecha: fecha }
+    }), 48 * 3600);
+    enviarWhatsApp(tel,
+      '⭐ ¡Gracias por visitarnos, *' + nombre + '*!\n\n' +
+      '¿Cómo calificarías tu experiencia con *' + barbero + '*?\n\n' +
+      'Responde con un número del *1 al 5* ✨'
+    );
+  } catch(err) { Logger.log('Error _enviarSolicitudCalificacion_: ' + err.toString()); }
 }
 
 // ─── Buscar columna por nombre (case-insensitive, sin espacios) ───────────────
