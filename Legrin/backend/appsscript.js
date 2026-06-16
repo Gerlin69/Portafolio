@@ -125,7 +125,7 @@ function doGet(e) {
       if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
       var hoja = _getHojaFotos();
       var id   = Utilities.getUuid();
-      hoja.appendRow([id, e.parameter.url || '', e.parameter.tipo || 'galeria', e.parameter.productoId || '', e.parameter.nombre || 'foto', new Date().toLocaleString()]);
+      hoja.appendRow([id, e.parameter.url || '', sanitizarCampo(e.parameter.tipo || 'galeria'), e.parameter.productoId || '', sanitizarCampo(e.parameter.nombre || 'foto'), new Date().toLocaleString()]);
       return ContentService.createTextOutput(JSON.stringify({ success: true, url: e.parameter.url, id: id })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -227,7 +227,7 @@ function guardarReservaGet(p) {
       p.barbero,
       p.fecha,
       p.hora,
-      p.tipoCorte || '',
+      sanitizarCampo(p.tipoCorte || ''),
       'Pago Pendiente',         // Estado general
       '',                       // Motivo rechazo
       new Date().toLocaleString(),
@@ -388,7 +388,7 @@ function actualizarEstadoCorteEnSheet(data) {
         return;
       }
       hoja.getRange(rowNum, colEstado).setValue(nuevoEstado);
-      if (colMotivo > 0 && data.motivo) hoja.getRange(rowNum, colMotivo).setValue(data.motivo);
+      if (colMotivo > 0 && data.motivo) hoja.getRange(rowNum, colMotivo).setValue(sanitizarCampo(data.motivo));
       if (nuevoEstado === 'Aprobado' && colTelefono >= 0)
         _enviarSolicitudCalificacion_(data.nombre, data.barbero, data.fecha, filaVerif[colTelefono]);
       return;
@@ -411,7 +411,7 @@ function actualizarEstadoCorteEnSheet(data) {
     if (nombreFila === data.nombre && barberoFila === data.barbero &&
         fechaFila === data.fecha && horaFila === data.hora) {
       hoja.getRange(i + 1, colEstado).setValue(nuevoEstado);
-      if (colMotivo > 0 && data.motivo) hoja.getRange(i + 1, colMotivo).setValue(data.motivo);
+      if (colMotivo > 0 && data.motivo) hoja.getRange(i + 1, colMotivo).setValue(sanitizarCampo(data.motivo));
       if (nuevoEstado === 'Aprobado' && colTelefono >= 0)
         _enviarSolicitudCalificacion_(data.nombre, data.barbero, data.fecha, fila[colTelefono]);
       return;
