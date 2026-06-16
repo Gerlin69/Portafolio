@@ -11,7 +11,6 @@ const PRECIO_ADELANTO       = 15000;
 const PRECIO_SALDO_BARBERIA = 10000;
 const NUMERO_COMPROBANTES   = '573102471637';
 const BARBEROS = BARBEROS_CONFIG.map(b => b.nombre);
-const ADMIN_PIN = 'legrin1234';
 const HORARIOS_DIA = {
     0: { inicio: 10 * 60,           fin: 17 * 60       }, // Domingo:   10:00 - 17:00
     1: { inicio: 10 * 60,           fin: 19 * 60 + 30 }, // Lunes:     10:00 - 19:30
@@ -25,7 +24,6 @@ const DURACION_CORTE = 45;
 const ALMUERZO = { inicio: 13 * 60, fin: 14 * 60, buffer: 5 }; // 1:00 PM - 2:00 PM, reinicia a las 2:05 PM
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkZB0MyiCJoVroKVuG7Povnf7KQaZPe4sNAjVQcnNde1-tXIhcD6pmmLbecGBHAy-LMA/exec';
-const APPS_SCRIPT_TOKEN = 'Lgr9vBk2xMpQ7nRs4'; // cambiar este valor y actualizar también en Apps Script
 const IMGBB_API_KEY = 'b60c57bd67096bc0d9e5d5789473aab2'; // Obtén tu API key gratuita en: https://api.imgbb.com/
 
 const WHATSAPP_ADMIN = '573233486719';

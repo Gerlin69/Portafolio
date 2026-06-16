@@ -66,7 +66,7 @@ async function obtenerSolicitudesGoogleSheets() {
     try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 12000);
-        const response = await fetch(`${APPS_SCRIPT_URL}?token=${APPS_SCRIPT_TOKEN}&_t=${Date.now()}`, {
+        const response = await fetch(`${APPS_SCRIPT_URL}?token=${sessionStorage.getItem('legrin_session') || ''}&_t=${Date.now()}`, {
             credentials: 'omit',
             signal: controller.signal
         });

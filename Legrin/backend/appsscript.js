@@ -1,4 +1,3 @@
-// Token secreto — debe coincidir con APPS_SCRIPT_TOKEN en data.js
 var TOKEN_SECRETO = 'Lgr9vBk2xMpQ7nRs4';
 var SHEET_ID      = '1K2XZLh-7o4g8pRCuWdB3vpHoyh2po8KQ5Z7yB1HH7tg';
 
@@ -52,6 +51,13 @@ function validarDatosReserva(p) {
   return null;
 }
 
+// ─── Validar sesión de administrador ─────────────────────────────────────────
+function _validarSesion(token) {
+  if (!token) return false;
+  if (token === TOKEN_SECRETO) return true;
+  return CacheService.getScriptCache().get('sess_' + String(token).substring(0, 36)) === 'valid';
+}
+
 // ─── Rate limiting — máx 3 reservas por teléfono cada 10 minutos ─────────────
 function verificarRateLimit(telefono) {
   try {
@@ -77,17 +83,17 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
 
     if (body.action === 'subirFoto') {
-      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
+      if (!_validarSesion(body.token)) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
       return ContentService.createTextOutput(JSON.stringify(_subirFoto(body.base64, body.mimeType, body.nombre, body.tipo, body.productoId))).setMimeType(ContentService.MimeType.JSON);
     }
 
     if (body.action === 'eliminarFoto') {
-      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
+      if (!_validarSesion(body.token)) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
       return ContentService.createTextOutput(JSON.stringify(_eliminarFoto(body.id))).setMimeType(ContentService.MimeType.JSON);
     }
 
     if (body.action === 'updateBarberStatus') {
-      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+      if (!_validarSesion(body.token)) return ContentService.createTextOutput(
         JSON.stringify({ success: false, error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
       actualizarEstadoBarbero(body.barbero, body.estado, body.tiempoRetorno, body.ultimaActualizacion);
@@ -96,7 +102,7 @@ function doPost(e) {
     }
 
     if (body.action === 'actualizarEstadoCorte') {
-      if (body.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+      if (!_validarSesion(body.token)) return ContentService.createTextOutput(
         JSON.stringify({ success: false, error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
       actualizarEstadoCorteEnSheet(body);
@@ -122,11 +128,40 @@ function doGet(e) {
     }
 
     if (e.parameter.action === 'guardarFoto') {
-      if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
+      if (!_validarSesion(e.parameter.token)) return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No autorizado' })).setMimeType(ContentService.MimeType.JSON);
       var hoja = _getHojaFotos();
       var id   = Utilities.getUuid();
       hoja.appendRow([id, e.parameter.url || '', sanitizarCampo(e.parameter.tipo || 'galeria'), e.parameter.productoId || '', sanitizarCampo(e.parameter.nombre || 'foto'), new Date().toLocaleString()]);
       return ContentService.createTextOutput(JSON.stringify({ success: true, url: e.parameter.url, id: id })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (e.parameter.action === 'validarAdmin') {
+      var rlKey  = 'rl_admin_login';
+      var rlCount = parseInt(CacheService.getScriptCache().get(rlKey) || '0');
+      if (rlCount >= 10) {
+        return ContentService.createTextOutput(JSON.stringify({ success: false, bloqueado: true }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      var pinGuardado = PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');
+      if (!pinGuardado) {
+        return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'PIN no configurado. Ejecuta configurarAdminPin() en Apps Script.' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      if (e.parameter.pin !== pinGuardado) {
+        CacheService.getScriptCache().put(rlKey, String(rlCount + 1), 300);
+        return ContentService.createTextOutput(JSON.stringify({ success: false }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      CacheService.getScriptCache().remove(rlKey);
+      var sessionToken = Utilities.getUuid();
+      CacheService.getScriptCache().put('sess_' + sessionToken, 'valid', 4 * 3600);
+      return ContentService.createTextOutput(JSON.stringify({ success: true, token: sessionToken }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (e.parameter.action === 'validarSesion') {
+      return ContentService.createTextOutput(JSON.stringify({ valid: _validarSesion(e.parameter.token || '') }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     if (e.parameter.action === 'getBarberStatus') {
@@ -145,7 +180,7 @@ function doGet(e) {
     }
 
     if (e.parameter.action === 'actualizarEstadoCorte') {
-      if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+      if (!_validarSesion(e.parameter.token)) return ContentService.createTextOutput(
         JSON.stringify({ success: false, error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
       actualizarEstadoCorteEnSheet(e.parameter);
@@ -154,7 +189,7 @@ function doGet(e) {
     }
 
     if (e.parameter.action === 'confirmarPago') {
-      if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+      if (!_validarSesion(e.parameter.token)) return ContentService.createTextOutput(
         JSON.stringify({ success: false, error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
       return ContentService.createTextOutput(JSON.stringify(confirmarPagoEnSheet(e.parameter)))
@@ -162,7 +197,7 @@ function doGet(e) {
     }
 
     if (e.parameter.action === 'notificarBarbero') {
-      if (e.parameter.token !== TOKEN_SECRETO) return ContentService.createTextOutput(
+      if (!_validarSesion(e.parameter.token)) return ContentService.createTextOutput(
         JSON.stringify({ success: false, error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
       return ContentService.createTextOutput(JSON.stringify(notificarBarberoCorteRealizado(e.parameter)))
@@ -170,7 +205,7 @@ function doGet(e) {
     }
 
     // Lectura de todas las solicitudes — requiere token secreto
-    if (e.parameter.token !== TOKEN_SECRETO) {
+    if (!_validarSesion(e.parameter.token)) {
       return ContentService.createTextOutput(JSON.stringify({ error: 'No autorizado' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
@@ -1004,6 +1039,12 @@ function _eliminarFoto(id) {
     }
   }
   return { success: false, error: 'Foto no encontrada' };
+}
+
+// 4) Configura el PIN del panel admin (ejecutar UNA VEZ — luego cambia el valor)
+function configurarAdminPin() {
+  PropertiesService.getScriptProperties().setProperty('ADMIN_PIN', 'legrin1234');
+  Logger.log('✅ Admin PIN configurado. Cámbialo por uno nuevo en PropertiesService.');
 }
 
 // ─── Backup Manual ────────────────────────────────────────────────────────────

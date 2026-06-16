@@ -290,44 +290,72 @@
         return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    // ─── Autenticación con límite de intentos ─────────────────────────────────
+    // ─── Autenticación — PIN validado en el servidor ──────────────────────────
     let _intentosFallidos = 0;
     let _bloqueadoHasta   = null;
 
-    function verificarPin() {
+    function _sesionToken() { return sessionStorage.getItem('legrin_session') || ''; }
+
+    async function verificarPin() {
         const errorEl = document.getElementById('pin-error');
+        const btn     = document.querySelector('#auth-overlay button[onclick]');
+
         if (_bloqueadoHasta && Date.now() < _bloqueadoHasta) {
             const mins = Math.ceil((_bloqueadoHasta - Date.now()) / 60000);
             errorEl.textContent = `Bloqueado. Espera ${mins} minuto${mins > 1 ? 's' : ''}.`;
             errorEl.style.display = 'block';
             return;
         }
-        const pin = document.getElementById('pin-input').value;
-        if (pin === ADMIN_PIN) {
-            _intentosFallidos = 0;
-            _bloqueadoHasta   = null;
-            document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('admin-content').style.display = 'block';
-            iniciarAdmin();
-            resetSessionTimeout();
-        } else {
-            _intentosFallidos++;
-            if (_intentosFallidos >= 5) {
-                _bloqueadoHasta   = Date.now() + 5 * 60 * 1000;
+
+        const pin = document.getElementById('pin-input').value.trim();
+        if (!pin) return;
+
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verificando...'; }
+
+        try {
+            const params = new URLSearchParams({ action: 'validarAdmin', pin });
+            const res  = await fetch(`${APPS_SCRIPT_URL}?${params}`, { credentials: 'omit' });
+            const data = await res.json();
+
+            if (data.success && data.token) {
+                sessionStorage.setItem('legrin_session', data.token);
                 _intentosFallidos = 0;
-                errorEl.textContent = 'Demasiados intentos. Bloqueado por 5 minutos.';
+                _bloqueadoHasta   = null;
+                _entrarAdmin();
+            } else if (data.bloqueado) {
+                errorEl.textContent = 'Demasiados intentos en el servidor. Espera unos minutos.';
+                errorEl.style.display = 'block';
             } else {
-                const restantes = 5 - _intentosFallidos;
-                errorEl.textContent = `PIN incorrecto. ${restantes} intento${restantes !== 1 ? 's' : ''} restante${restantes !== 1 ? 's' : ''}.`;
+                _intentosFallidos++;
+                if (_intentosFallidos >= 5) {
+                    _bloqueadoHasta   = Date.now() + 5 * 60 * 1000;
+                    _intentosFallidos = 0;
+                    errorEl.textContent = 'Demasiados intentos. Bloqueado por 5 minutos.';
+                } else {
+                    const restantes = 5 - _intentosFallidos;
+                    errorEl.textContent = `PIN incorrecto. ${restantes} intento${restantes !== 1 ? 's' : ''} restante${restantes !== 1 ? 's' : ''}.`;
+                }
+                errorEl.style.display = 'block';
+                document.getElementById('pin-input').value = '';
+                document.getElementById('pin-input').style.borderColor = 'rgba(239,68,68,0.6)';
+                setTimeout(() => {
+                    if (!(_bloqueadoHasta && Date.now() < _bloqueadoHasta)) errorEl.style.display = 'none';
+                    document.getElementById('pin-input').style.borderColor = '';
+                }, 3000);
             }
+        } catch {
+            errorEl.textContent = 'Error de red. Intenta de nuevo.';
             errorEl.style.display = 'block';
-            document.getElementById('pin-input').value = '';
-            document.getElementById('pin-input').style.borderColor = 'rgba(239,68,68,0.6)';
-            setTimeout(() => {
-                if (!(_bloqueadoHasta && Date.now() < _bloqueadoHasta)) errorEl.style.display = 'none';
-                document.getElementById('pin-input').style.borderColor = '';
-            }, 3000);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-unlock mr-2"></i>Acceder'; }
         }
+    }
+
+    function _entrarAdmin() {
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        iniciarAdmin();
+        resetSessionTimeout();
     }
 
     // ─── Timeout de sesión — cierre automático por inactividad ───────────────
@@ -346,6 +374,7 @@
     function cerrarSesion() {
         clearTimeout(_sessionTimer);
         _sessionTimer = null;
+        sessionStorage.removeItem('legrin_session');
         document.getElementById('admin-content').style.display = 'none';
         document.getElementById('auth-overlay').style.display = 'flex';
         document.getElementById('pin-input').value = '';
@@ -696,7 +725,7 @@
         try {
             const params = new URLSearchParams({
                 action:  'notificarBarbero',
-                token:   APPS_SCRIPT_TOKEN,
+                token:   _sesionToken(),
                 nombre:  r.Nombre  || '',
                 barbero: r.Barbero || '',
                 fecha:   String(r.Fecha || '').substring(0, 10),
@@ -714,7 +743,7 @@
         try {
             const params = new URLSearchParams({
                 action:  'confirmarPago',
-                token:   APPS_SCRIPT_TOKEN,
+                token:   _sesionToken(),
                 nombre:  r.Nombre  || '',
                 barbero: r.Barbero || '',
                 fecha:   String(r.Fecha || '').substring(0, 10),
@@ -778,7 +807,7 @@
         try {
             const params = new URLSearchParams({
                 action: 'actualizarEstadoCorte',
-                token:  APPS_SCRIPT_TOKEN,
+                token:  _sesionToken(),
                 id:     r.ID !== undefined ? String(r.ID) : '',
                 barbero: r.Barbero || '',
                 fecha:  String(r.Fecha || '').substring(0, 10),
@@ -1157,7 +1186,7 @@
         // 2. Guardar solo la URL en Sheets via Apps Script GET (sin Drive)
         const params = new URLSearchParams({
             action: 'guardarFoto',
-            token: APPS_SCRIPT_TOKEN,
+            token: _sesionToken(),
             url,
             tipo: tipo || 'galeria',
             nombre: nombre || 'foto',
@@ -1215,7 +1244,7 @@
             await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 credentials: 'omit',
-                body: JSON.stringify({ action: 'eliminarFoto', token: APPS_SCRIPT_TOKEN, id })
+                body: JSON.stringify({ action: 'eliminarFoto', token: _sesionToken(), id })
             });
             if (elCard) elCard.remove();
             try {
@@ -1345,6 +1374,17 @@
         }).join('');
     }
 
+    // ─── Restaurar sesión existente al cargar la página ───────────────────────
+    (async function() {
+        const token = sessionStorage.getItem('legrin_session');
+        if (!token) return;
+        try {
+            const res  = await fetch(`${APPS_SCRIPT_URL}?action=validarSesion&token=${encodeURIComponent(token)}`, { credentials: 'omit' });
+            const data = await res.json();
+            if (data.valid) _entrarAdmin();
+            else sessionStorage.removeItem('legrin_session');
+        } catch { /* si falla la red, pide PIN normalmente */ }
+    })();
 </script>
 </body>
 </html>
