@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /Pages/admin.html
+
+Sitemap: https://gerlin69.github.io/Portafolio/Legrin/sitemap.xml
